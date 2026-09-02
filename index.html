@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PitchDeck Hub — Where Ideas Meet Capital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=line-clamp"></script>
+<script>
+tailwind.config = { darkMode: 'class', theme: { extend: {
+  fontFamily: { sans: ['Inter','system-ui','sans-serif'], display: ['"Space Grotesk"','Inter','sans-serif'] },
+  colors: { ink: '#0B0F17', ink2: '#0F1522', ink3: '#151C2C', brand: '#6366F1', fund: '#10B981' }
+} } }
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+:root { --ease: cubic-bezier(.16,1,.3,1); }
+html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; }
+::selection { background:#6366F1; color:#fff; }
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(99,102,241,.35); border-radius:99px; border:3px solid transparent; background-clip:content-box; }
+::-webkit-scrollbar-thumb:hover { background:rgba(99,102,241,.65); background-clip:content-box; }
+
+.reveal { opacity:0; transform:translateY(22px); }
+.reveal.in { opacity:1; transform:none; transition:opacity .8s var(--ease), transform .8s var(--ease); transition-delay:var(--d,0ms); }
+
+.kin { display:inline-block; overflow:hidden; vertical-align:bottom; padding-bottom:.08em; }
+.kin span { display:inline-block; transform:translateY(110%); animation:kinUp .9s var(--ease) forwards; animation-delay:var(--kd,0ms); }
+@keyframes kinUp { to { transform:translateY(0); } }
+
+.sweep { position:absolute; inset:0; pointer-events:none; overflow:hidden; border-radius:inherit; }
+.sweep::after { content:''; position:absolute; top:-60%; left:-120%; width:60%; height:220%; background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent); transform:rotate(12deg); transition:left .85s var(--ease); }
+.group:hover .sweep::after { left:150%; }
+.lift { transition:transform .5s var(--ease), box-shadow .5s var(--ease), border-color .4s ease; }
+.lift:hover { transform:translateY(-6px); box-shadow:0 26px 60px -28px rgba(99,102,241,.55); }
+
+.gridbg { background-image:linear-gradient(rgba(99,102,241,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.10) 1px,transparent 1px); background-size:58px 58px; mask-image:radial-gradient(ellipse 85% 70% at 50% 30%,#000 30%,transparent 78%); -webkit-mask-image:radial-gradient(ellipse 85% 70% at 50% 30%,#000 30%,transparent 78%); }
+.beam { position:absolute; width:140%; height:180px; left:-20%; background:linear-gradient(90deg,transparent,rgba(99,102,241,.16),transparent); filter:blur(24px); animation:beamMove 14s linear infinite; pointer-events:none; }
+@keyframes beamMove { 0%{transform:translateY(-10vh) rotate(-8deg);opacity:0} 12%{opacity:1} 88%{opacity:1} 100%{transform:translateY(95vh) rotate(-8deg);opacity:0} }
+
+.deckstack { transform-style:preserve-3d; transition:transform .5s var(--ease); }
+.slide3d { transition:transform .7s var(--ease), box-shadow .7s var(--ease); will-change:transform; }
+.floaty { animation:floaty 7s ease-in-out infinite; }
+@keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+.pop { animation:pop .5s var(--ease); }
+@keyframes pop { 0%{transform:scale(1)} 35%{transform:scale(1.28)} 100%{transform:scale(1)} }
+.floatplus { position:absolute; right:50%; top:0; font-size:11px; font-weight:700; color:#10B981; animation:floatUp .9s var(--ease) forwards; pointer-events:none; }
+@keyframes floatUp { to { transform:translateY(-28px); opacity:0; } }
+
+.view-enter { animation:viewIn .55s var(--ease) both; }
+@keyframes viewIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+.sheet-enter { animation:sheetIn .45s var(--ease) both; }
+@keyframes sheetIn { from{opacity:0;transform:translateY(30px) scale(.985)} to{opacity:1;transform:none} }
+.fade-in { animation:fadeIn .3s ease both; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.bar { height:8px; border-radius:99px; background:rgba(148,163,184,.18); overflow:hidden; }
+.bar i { display:block; height:100%; width:0; border-radius:99px; background:linear-gradient(90deg,#10B981,#34D399); transition:width 1.4s var(--ease); }
+
+.ticker { animation:tick 36s linear infinite; }
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.no-scroll { overflow:hidden; }
+input:focus, select:focus, textarea:focus { outline:none; }
+.deckpage { animation:pageIn .45s var(--ease) both; }
+@keyframes pageIn { from{opacity:0;transform:translateX(18px) rotateY(-6deg)} to{opacity:1;transform:none} }
+.chip-active { background:#6366F1 !important; color:#fff !important; border-color:#6366F1 !important; }
+.field { width:100%; border-radius:.75rem; border:1px solid rgba(148,163,184,.35); background:rgba(255,255,255,.7); padding:.7rem .9rem; font-size:.875rem; transition:border-color .2s, box-shadow .2s; }
+.dark .field { background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.1); color:#f1f5f9; }
+.field:focus { border-color:#6366F1; box-shadow:0 0 0 4px rgba(99,102,241,.18); }
+.field.err { border-color:#f43f5e; box-shadow:0 0 0 4px rgba(244,63,94,.15); }
+.dark select.field option { background:#0F1522; }
+#deckViewer:fullscreen { background:#0B0F17; display:flex; align-items:center; justify-content:center; padding:2rem; }
+#deckViewer:fullscreen .deckframe { width:min(100%, 170vh); }
+.tabline { position:relative; }
+.tabline::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:#6366F1; transform:scaleX(0); transition:transform .35s var(--ease); }
+.tabline.on::after { transform:scaleX(1); }
+.dropz.over { border-color:#6366F1; background:rgba(99,102,241,.08); }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; } .reveal{opacity:1!important;transform:none!important} .kin span{transform:none!important} }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-ink dark:text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+
+<!-- ══════════ NAV ══════════ -->
+<header class="fixed top-0 inset-x-0 z-50 px-3 sm:px-5 pt-3 sm:pt-4">
+  <nav id="nav" class="mx-auto max-w-7xl rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-ink2/75 backdrop-blur-xl shadow-lg shadow-slate-900/5 dark:shadow-black/30 px-3 sm:px-4 h-16 flex items-center gap-2 sm:gap-3">
+    <a href="#/" class="flex items-center gap-2.5 shrink-0 group">
+      <span class="relative grid place-items-center h-9 w-9 rounded-xl bg-gradient-to-br from-brand to-violet-500 text-white shadow-lg shadow-brand/40">
+        <i data-lucide="presentation" class="h-4.5 w-4.5"></i>
+      </span>
+      <span class="font-display font-700 font-bold tracking-tight text-[17px] hidden xs:inline sm:inline">PitchDeck <span class="text-brand">Hub</span></span>
+    </a>
+
+    <div class="hidden md:flex flex-1 max-w-md items-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100/70 dark:bg-white/5 px-3 h-10 focus-within:border-brand focus-within:ring-4 ring-brand/15 transition">
+      <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+      <input id="navSearch" type="text" placeholder="Search pitches, founders, sectors…" class="bg-transparent text-sm flex-1 placeholder:text-slate-400" />
+      <kbd class="hidden lg:inline text-[10px] px-1.5 py-0.5 rounded border border-slate-300 dark:border-white/15 text-slate-400">/</kbd>
+    </div>
+
+    <div class="relative hidden lg:block">
+      <button id="catTrigger" class="flex items-center gap-1.5 h-10 px-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition">
+        <i data-lucide="layout-grid" class="h-4 w-4"></i> Categories <i data-lucide="chevron-down" class="h-3.5 w-3.5"></i>
+      </button>
+      <div id="catMenu" class="hidden absolute top-12 left-0 w-56 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 shadow-2xl p-2 fade-in"></div>
+    </div>
+
+    <a href="#/explore" data-nav="explore" class="hidden lg:flex items-center h-10 px-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition">Explore Pitches</a>
+
+    <div class="flex-1 md:hidden"></div>
+
+    <a href="#/submit" class="group relative overflow-hidden hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-brand text-white text-sm font-semibold shadow-lg shadow-brand/30 hover:bg-indigo-500 transition">
+      <span class="sweep"></span><i data-lucide="rocket" class="h-4 w-4"></i> Submit a Pitch
+    </a>
+
+    <button id="themeBtn" aria-label="Toggle theme" class="grid place-items-center h-10 w-10 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition">
+      <i data-lucide="sun" class="h-4.5 w-4.5 hidden dark:block"></i><i data-lucide="moon" class="h-4.5 w-4.5 dark:hidden"></i>
+    </button>
+
+    <button id="authBtn" class="flex items-center gap-2 h-10 pl-1.5 pr-3 rounded-xl border border-slate-200 dark:border-white/10 hover:border-brand/60 transition text-sm font-medium"></button>
+
+    <button id="menuBtn" aria-label="Menu" class="lg:hidden grid place-items-center h-10 w-10 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"><i data-lucide="menu" class="h-5 w-5"></i></button>
+  </nav>
+  <div id="mobileMenu" class="hidden mx-auto max-w-7xl mt-2 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-ink2/95 backdrop-blur-xl shadow-2xl p-3 fade-in lg:hidden">
+    <div class="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100/70 dark:bg-white/5 px-3 h-11 mb-2 md:hidden">
+      <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+      <input id="mobSearch" type="text" placeholder="Search pitches…" class="bg-transparent text-sm flex-1" />
+    </div>
+    <a href="#/explore" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5"><i data-lucide="compass" class="h-4 w-4 text-brand"></i> Explore Pitches</a>
+    <a href="#/submit" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5"><i data-lucide="rocket" class="h-4 w-4 text-brand"></i> Submit a Pitch</a>
+    <a href="#/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5"><i data-lucide="layout-dashboard" class="h-4 w-4 text-brand"></i> Dashboard</a>
+    <div id="mobCats" class="grid grid-cols-3 gap-1.5 mt-2 pt-2 border-t border-slate-200 dark:border-white/10"></div>
+  </div>
+</header>
+
+<main id="app" class="flex-1 pt-24 sm:pt-28"></main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="mt-20 border-t border-slate-200 dark:border-white/10">
+  <div class="mx-auto max-w-7xl px-5 py-10 grid gap-8 md:grid-cols-4">
+    <div class="md:col-span-2">
+      <div class="flex items-center gap-2.5">
+        <span class="grid place-items-center h-8 w-8 rounded-lg bg-gradient-to-br from-brand to-violet-500 text-white"><i data-lucide="presentation" class="h-4 w-4"></i></span>
+        <span class="font-display font-bold tracking-tight">PitchDeck Hub</span>
+      </div>
+      <p class="mt-3 text-sm text-slate-500 dark:text-slate-400 max-w-sm">Where ideas meet capital. Discover early-stage companies, back the founders you believe in, and get in front of the right investors.</p>
+      <div id="modeBadge" class="mt-4 inline-flex items-center gap-2 text-xs px-2.5 py-1 rounded-full border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400"></div>
+    </div>
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Platform</p>
+      <ul class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+        <li><a href="#/explore" class="hover:text-brand">Explore Pitches</a></li>
+        <li><a href="#/submit" class="hover:text-brand">Submit a Pitch</a></li>
+        <li><a href="#/dashboard" class="hover:text-brand">Founder Dashboard</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Investors</p>
+      <ul class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+        <li><a href="#" class="hover:text-brand">Deal Flow Digest</a></li>
+        <li><a href="#" class="hover:text-brand">Syndicates</a></li>
+        <li><a href="#" class="hover:text-brand">Accreditation</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="mx-auto max-w-7xl px-5 pb-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+    <span>© 2025 PitchDeck Hub. Not investment advice.</span>
+    <span>Built with Tailwind · Lucide · Supabase-ready</span>
+  </div>
+</footer>
+
+<div id="modal-root"></div>
+<div id="toast-root" class="fixed bottom-4 right-4 z-[70] flex flex-col gap-2 w-[calc(100%-2rem)] sm:w-80"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   SUPABASE WIRING
+   Set window.SUPABASE_URL / window.SUPABASE_ANON_KEY before this
+   script to go live. Otherwise a localStorage mock DB is used.
+
+   -- schema.sql ---------------------------------------------------
+   create table pitches (
+     id uuid primary key default gen_random_uuid(),
+     owner_id uuid references auth.users,
+     title text, tagline text, description text, problem text, solution text,
+     category text, stage text, target numeric, committed numeric default 0,
+     upvotes int default 0, views int default 0,
+     founder jsonb, video_url text, deck_path text, status text default 'Pending',
+     created_at timestamptz default now()
+   );
+   create table upvotes (user_id uuid, pitch_id uuid, primary key(user_id,pitch_id));
+   create table saves   (user_id uuid, pitch_id uuid, primary key(user_id,pitch_id));
+   create table contacts (id uuid primary key default gen_random_uuid(), pitch_id uuid,
+     name text, email text, investor_type text, message text, created_at timestamptz default now());
+   -- storage bucket: "decks" (public read, authenticated write, 15MB limit)
+   ═══════════════════════════════════════════════════════════════ */
+const SUPABASE_URL = window.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
+let sb = null;
+
+const CATS = ['Fintech','Healthtech','AI','SaaS','Green Energy'];
+const STAGES = ['Idea','MVP','Pre-Seed','Seed','Series A'];
+const CAT_STYLE = {
+  'Fintech':'from-sky-500 to-blue-600', 'Healthtech':'from-rose-500 to-pink-600', 'AI':'from-brand to-violet-600',
+  'SaaS':'from-amber-400 to-orange-500', 'Green Energy':'from-fund to-teal-500'
+};
+const CAT_CHIP = {
+  'Fintech':'bg-sky-500/10 text-sky-600 dark:text-sky-300 border-sky-500/20',
+  'Healthtech':'bg-rose-500/10 text-rose-600 dark:text-rose-300 border-rose-500/20',
+  'AI':'bg-brand/10 text-brand dark:text-indigo-300 border-brand/20',
+  'SaaS':'bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/20',
+  'Green Energy':'bg-fund/10 text-emerald-600 dark:text-emerald-300 border-fund/20'
+};
+const STATUS_CHIP = {
+  'Approved':'bg-fund/10 text-emerald-600 dark:text-emerald-300 border-fund/25',
+  'Pending':'bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/25',
+  'Draft':'bg-slate-500/10 text-slate-500 dark:text-slate-300 border-slate-500/25'
+};
+
+/* ── Seed data ─────────────────────────────────────────────── */
+const SEED = [
+ { id:'p1', ownerId:'u_other', title:'NeuroLens AI', tagline:'Radiologist-grade diagnostic imaging for rural clinics — in under 90 seconds.', category:'AI', stage:'Seed', target:1500000, committed:620000, upvotes:412, views:8420,
+   description:'NeuroLens turns any portable ultrasound or X-ray unit into a specialist-grade diagnostic tool. Our on-device models run without connectivity and deliver a triage report clinicians can act on immediately.',
+   problem:'Over 2 billion people live in regions without a radiologist within 100km. Scans wait days for a read, and 30% are never interpreted at all — patients simply go home.',
+   solution:'Edge-deployed vision models trained on 4.1M annotated studies deliver a triage read in <90s with 94.2% sensitivity. Clinics pay per scan; hospital networks license the platform.',
+   founder:{name:'Dr. Amara Okafor', title:'CEO & Co-founder · ex-Mayo Clinic', linkedin:'#', initials:'AO', color:'from-brand to-violet-500'},
+   videoUrl:'https://www.youtube.com/embed/ScMzIvxBSi4', market:{tam:'$48B',sam:'$6.2B',som:'$310M'}, traction:[['Scans read','1.2M'],['Clinics live','184'],['ARR','$1.1M'],['MoM growth','19%']], createdAt:'2025-03-12' },
+ { id:'p2', ownerId:'demo', title:'Ledgerly', tagline:'Embedded bookkeeping and tax automation for the creator economy.', category:'Fintech', stage:'Pre-Seed', target:750000, committed:410000, upvotes:287, views:5310,
+   description:'Ledgerly plugs into Stripe, Patreon, YouTube and Shopify to categorise creator income in real time, set aside quarterly taxes automatically and produce investor-ready P&Ls.',
+   problem:'50M+ creators earn across 6+ platforms on average. 71% file taxes late and overpay by an average of $3,400/year because their income is fragmented.',
+   solution:'A multi-platform ledger with automated tax escrow and one-click filing. We monetise via a $19/mo subscription and interchange on the Ledgerly card.',
+   founder:{name:'Ava Chen', title:'Co-founder & CEO · ex-Stripe', linkedin:'#', initials:'AC', color:'from-sky-500 to-blue-600'},
+   videoUrl:'', market:{tam:'$12B',sam:'$2.8B',som:'$140M'}, traction:[['Creators onboarded','9,400'],['Waitlist','41k'],['MRR','$38k'],['Retention (90d)','88%']], createdAt:'2025-04-02' },
+ { id:'p3', ownerId:'u_other', title:'CarePulse', tagline:'Remote monitoring that predicts chronic-care emergencies 48 hours early.', category:'Healthtech', stage:'MVP', target:400000, committed:95000, upvotes:198, views:3860,
+   description:'CarePulse combines a wearable patch with a clinician dashboard that flags deterioration in COPD and heart-failure patients before it becomes a hospital readmission.',
+   problem:'One in five heart-failure patients is readmitted within 30 days, costing US hospitals $26B/year in penalties and avoidable care.',
+   solution:'Continuous vitals + our deterioration index give care teams a 48-hour window to intervene. Priced per-patient-per-month under CMS remote monitoring codes.',
+   founder:{name:'Marcus Reyes', title:'Founder · former ICU nurse', linkedin:'#', initials:'MR', color:'from-rose-500 to-pink-600'},
+   videoUrl:'https://www.youtube.com/embed/ScMzIvxBSi4', market:{tam:'$31B',sam:'$4.5B',som:'$120M'}, traction:[['Patients monitored','620'],['Pilot hospitals','3'],['Readmission ↓','27%'],['LOIs','$480k']], createdAt:'2025-05-18' },
+ { id:'p4', ownerId:'u_other', title:'Stackform', tagline:'No-code internal tools generated directly from your production database.', category:'SaaS', stage:'Series A', target:6000000, committed:4200000, upvotes:521, views:12940,
+   description:'Point Stackform at Postgres, MySQL or Snowflake and it generates admin panels, approval flows and dashboards with role-based permissions — no drag-and-drop required.',
+   problem:'Engineering teams spend ~30% of their sprint capacity on internal tooling that nobody wants to build and everybody depends on.',
+   solution:'Schema-aware generation with an editable layer. Teams ship internal tools in minutes, not sprints. Usage-based pricing on seats + rows.',
+   founder:{name:'Priya Natarajan', title:'CEO · ex-Segment, Twilio', linkedin:'#', initials:'PN', color:'from-amber-400 to-orange-500'},
+   videoUrl:'', market:{tam:'$22B',sam:'$5.1B',som:'$400M'}, traction:[['ARR','$3.4M'],['Customers','312'],['NRR','131%'],['Team','24']], createdAt:'2025-02-08' },
+ { id:'p5', ownerId:'demo', title:'Heliograph', tagline:'A peer-to-peer marketplace for rooftop solar credits and excess energy.', category:'Green Energy', stage:'Seed', target:2500000, committed:1150000, upvotes:344, views:7210,
+   description:'Heliograph lets homeowners with solar sell surplus generation and renewable credits directly to neighbours and small businesses, settling on-chain and via local utilities.',
+   problem:'Solar homeowners lose 40–60% of the value of surplus energy to fixed utility buy-back rates. Small businesses can\'t access affordable green credits.',
+   solution:'A local energy exchange integrated with 14 utilities. We take a 4% transaction fee and license the settlement layer to co-ops.',
+   founder:{name:'Ava Chen', title:'Co-founder · ex-Stripe', linkedin:'#', initials:'AC', color:'from-fund to-teal-500'},
+   videoUrl:'https://www.youtube.com/embed/ScMzIvxBSi4', market:{tam:'$19B',sam:'$3.3B',som:'$210M'}, traction:[['GWh traded','2.8'],['Households','6,100'],['Utilities','14'],['Run-rate','$620k']], createdAt:'2025-01-22' },
+ { id:'p6', ownerId:'u_other', title:'VoltRoute', tagline:'AI dispatch that cuts EV fleet charging costs by routing to the cheapest kWh.', category:'Green Energy', stage:'Idea', target:250000, committed:40000, upvotes:132, views:2140,
+   description:'VoltRoute ingests real-time tariff data, charger availability and route plans to tell fleet drivers exactly where and when to charge.',
+   problem:'Commercial EV fleets overpay 22% on energy because charging decisions are made by drivers, not by data.',
+   solution:'A dispatch API + driver app. Pricing is a percentage of verified savings, so ROI is guaranteed from day one.',
+   founder:{name:'Jonas Lindqvist', title:'Founder · ex-Northvolt', linkedin:'#', initials:'JL', color:'from-emerald-500 to-lime-500'},
+   videoUrl:'', market:{tam:'$9B',sam:'$1.4B',som:'$60M'}, traction:[['Fleets in pilot','4'],['Vehicles','380'],['Savings verified','18%'],['Design partners','2']], createdAt:'2025-06-05' },
+ { id:'p7', ownerId:'demo', title:'Orbita Logistics', tagline:'Autonomous last-mile routing for micro-warehouses.', category:'SaaS', stage:'Idea', target:300000, committed:0, upvotes:0, views:0,
+   description:'Draft — still writing.', problem:'Last-mile costs 53% of total shipping spend.', solution:'Routing engine for dense urban micro-fulfilment.',
+   founder:{name:'Ava Chen', title:'Co-founder', linkedin:'#', initials:'AC', color:'from-slate-500 to-slate-700'}, videoUrl:'', market:{tam:'$7B',sam:'$1B',som:'$40M'}, traction:[['Status','Draft'],['Deck','Missing'],['Video','—'],['Target','$300k']], createdAt:'2025-06-20', status:'Draft' }
+].map(p => ({ status:'Approved', ...p }));
+
+const SEED_CONTACTS = [
+ { id:'c1', pitchId:'p2', name:'Daniel Moreau', email:'daniel@northbridge.vc', investorType:'VC', message:'Loved the tax-escrow angle. Can we set up a 30-min intro call next week? We lead pre-seed fintech in Europe.', createdAt:'2025-06-14T09:30:00Z' },
+ { id:'c2', pitchId:'p5', name:'Sofia Alvarez', email:'sofia@greenseed.fund', investorType:'Angel', message:'Utility integrations are impressive. Interested in committing $50k on the current round — what are the terms?', createdAt:'2025-06-12T16:10:00Z' },
+ { id:'c3', pitchId:'p2', name:'Kenji Watanabe', email:'k.watanabe@corp-ventures.jp', investorType:'Corporate', message:'Exploring creator-economy partnerships for our payments arm. Would like to see your data room.', createdAt:'2025-06-09T11:45:00Z' }
+];
+
+/* ── State ────────────────────────────────────────────────── */
+const LS = { get:(k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d }catch{ return d } }, set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)) };
+const state = {
+  pitches: LS.get('pdh_pitches', SEED),
+  contacts: LS.get('pdh_contacts', SEED_CONTACTS),
+  upvoted: new Set(LS.get('pdh_upvoted', [])),
+  saved: new Set(LS.get('pdh_saved', [])),
+  user: LS.get('pdh_user', null),
+  filters: { q:'', cat:'All', stage:'All', sort:'upvotes' },
+  deckPage: 0
+};
+const persist = () => { LS.set('pdh_pitches', state.pitches); LS.set('pdh_contacts', state.contacts); LS.set('pdh_upvoted',[...state.upvoted]); LS.set('pdh_saved',[...state.saved]); LS.set('pdh_user', state.user); };
+
+/* ── DB adapter (Supabase or local) ───────────────────────── */
+const db = {
+  live: false,
+  async init(){
+    if(!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+    try {
+      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data, error } = await sb.from('pitches').select('*').order('created_at',{ascending:false});
+      if(!error && data && data.length){ state.pitches = data.map(r=>({ ...r, ownerId:r.owner_id, videoUrl:r.video_url, deckUrl:r.deck_path ? sb.storage.from('decks').getPublicUrl(r.deck_path).data.publicUrl : '', createdAt:r.created_at })); }
+      const { data:{ user } } = await sb.auth.getUser();
+      if(user) state.user = { id:user.id, name:user.user_metadata?.full_name || user.email.split('@')[0], email:user.email, initials:(user.email[0]||'U').toUpperCase() };
+      this.live = true;
+    } catch(e){ console.warn('Supabase unavailable, using local mock.', e); }
+  },
+  async createPitch(p){
+    if(this.live){ const { data, error } = await sb.from('pitches').insert({ owner_id:state.user?.id, title:p.title, tagline:p.tagline, description:p.description, problem:p.problem, solution:p.solution, category:p.category, stage:p.stage, target:p.target, founder:p.founder, video_url:p.videoUrl, deck_path:p.deckPath, status:'Pending' }).select().single(); if(!error) p.id = data.id; }
+    state.pitches.unshift(p); persist(); return p;
+  },
+  async uploadDeck(file){
+    if(this.live){ const path = `${state.user?.id||'anon'}/${Date.now()}-${file.name}`; const { error } = await sb.storage.from('decks').upload(path, file); if(!error) return path; }
+    return null;
+  },
+  async toggleUpvote(id){
+    const p = state.pitches.find(x=>x.id===id); if(!p) return;
+    const on = state.upvoted.has(id);
+    if(on){ state.upvoted.delete(id); p.upvotes = Math.max(0,p.upvotes-1); } else { state.upvoted.add(id); p.upvotes++; }
+    if(this.live && state.user){ if(on) await sb.from('upvotes').delete().match({user_id:state.user.id,pitch_id:id}); else await sb.from('upvotes').insert({user_id:state.user.id,pitch_id:id}); await sb.from('pitches').update({upvotes:p.upvotes}).eq('id',id); }
+    persist(); return !on;
+  },
+  async toggleSave(id){
+    const on = state.saved.has(id); on ? state.saved.delete(id) : state.saved.add(id);
+    if(this.live && state.user){ if(on) await sb.from('saves').delete().match({user_id:state.user.id,pitch_id:id}); else await sb.from('saves').insert({user_id:state.user.id,pitch_id:id}); }
+    persist(); return !on;
+  },
+  async view(id){ const p = state.pitches.find(x=>x.id===id); if(!p) return; p.views=(p.views||0)+1; if(this.live) sb.rpc('increment_view',{pid:id}).catch(()=>{}); persist(); },
+  async contact(c){ state.contacts.unshift(c); if(this.live) await sb.from('contacts').insert({pitch_id:c.pitchId,name:c.name,email:c.email,investor_type:c.investorType,message:c.message}); persist(); },
+  async signIn(email){
+    if(this.live){ const { error } = await sb.auth.signInWithOtp({ email }); return { magic: !error }; }
+    state.user = { id:'demo', name: email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) || 'Ava Chen', email, initials:(email[0]||'A').toUpperCase() };
+    if(email.toLowerCase().includes('ava')) state.user.name='Ava Chen', state.user.initials='AC';
+    persist(); return { magic:false };
+  },
+  async signOut(){ if(this.live) await sb.auth.signOut(); state.user=null; persist(); }
+};
+
+/* ── Helpers ───────────────────────────────────────────────── */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => '$' + Math.round(n).toLocaleString('en-US');
+const short = n => n>=1e6 ? '$'+(n/1e6).toFixed(n%1e6?1:0)+'M' : n>=1e3 ? '$'+Math.round(n/1e3)+'K' : '$'+n;
+const num = n => n>=1000 ? (n/1000).toFixed(1).replace('.0','')+'k' : String(n);
+const icons = () => lucide.createIcons();
+const timeAgo = d => { const s=(Date.now()-new Date(d))/1000; if(s<3600) return Math.max(1,Math.floor(s/60))+'m ago'; if(s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; };
+function seeded(str){ let h=1779033703^str.length; for(let i=0;i<str.length;i++){ h=Math.imul(h^str.charCodeAt(i),3432918353); h=h<<13|h>>>19; } return ()=>{ h=Math.imul(h^h>>>16,2246822507); h=Math.imul(h^h>>>13,3266489909); return ((h^=h>>>16)>>>0)/4294967296; }; }
+function history(p, days=14){ const r=seeded(p.id); const base=(p.views||10)/days; return Array.from({length:days},(_,i)=>Math.max(1,Math.round(base*(0.55+r()*0.9)*(1+i/days*0.6)))); }
+function spark(arr, color='#6366F1', w=120, h=36){ const max=Math.max(...arr,1), min=Math.min(...arr); const pts=arr.map((v,i)=>[i/(arr.length-1)*w, h-4-((v-min)/(max-min||1))*(h-8)]); const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' '); const id='g'+Math.random().toString(36).slice(2,7);
+  return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-9 overflow-visible"><defs><linearGradient id="${id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".35"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${d} L ${w} ${h} L 0 ${h} Z" fill="url(#${id})"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/><circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="2.6" fill="${color}"/></svg>`; }
+function toast(msg, type='ok'){ const el=document.createElement('div'); const c={ok:'border-fund/40 text-emerald-600 dark:text-emerald-300',err:'border-rose-500/40 text-rose-600 dark:text-rose-300',info:'border-brand/40 text-brand dark:text-indigo-300'}[type]; const ic={ok:'check-circle-2',err:'alert-circle',info:'info'}[type];
+  el.className=`sheet-enter flex items-start gap-3 rounded-xl border ${c} bg-white dark:bg-ink2 shadow-2xl px-4 py-3 text-sm`; el.innerHTML=`<i data-lucide="${ic}" class="h-4.5 w-4.5 shrink-0 mt-0.5"></i><span class="text-slate-700 dark:text-slate-200">${msg}</span>`; $('#toast-root').appendChild(el); icons(); setTimeout(()=>{ el.style.transition='opacity .4s, transform .4s'; el.style.opacity=0; el.style.transform='translateY(10px)'; setTimeout(()=>el.remove(),400); },3400); }
+function observeReveal(){ const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }),{threshold:.08}); $$('.reveal:not(.in)').forEach(el=>io.observe(el)); }
+const logoHTML = (p, cls='h-14 w-14 text-lg') => `<div class="grid place-items-center ${cls} rounded-2xl bg-gradient-to-br ${p.founder?.color||CAT_STYLE[p.category]} text-white font-display font-bold shadow-xl shadow-black/20 ring-1 ring-white/20">${esc((p.title||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>`;
+const catChip = c => `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md border ${CAT_CHIP[c]||'bg-slate-500/10 text-slate-500 border-slate-500/20'}">${esc(c)}</span>`;
+const stageChip = s => `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 bg-slate-100/70 dark:bg-white/5"><i data-lucide="signal" class="h-3 w-3"></i>${esc(s)}</span>`;
+const statusChip = s => `<span class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-md border ${STATUS_CHIP[s]}"><span class="h-1.5 w-1.5 rounded-full ${s==='Approved'?'bg-fund':s==='Pending'?'bg-amber-400 animate-pulse':'bg-slate-400'}"></span>${s}</span>`;
+const approved = () => state.pitches.filter(p=>p.status==='Approved');
+
+/* ── Upvote / Save shared handlers ─────────────────────────── */
+async function upvote(id, btn){
+  const on = await db.toggleUpvote(id); const p = state.pitches.find(x=>x.id===id);
+  $$(`[data-upvote="${id}"]`).forEach(b=>{ b.classList.toggle('!border-fund',on); b.classList.toggle('!text-emerald-500',on); b.classList.toggle('bg-fund/10',on); const c=$('[data-count]',b); if(c) c.textContent=num(p.upvotes); const ic=$('svg,i',b); if(ic) ic.setAttribute('fill', on?'currentColor':'none'); });
+  if(btn){ btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop'); if(on){ const f=document.createElement('span'); f.className='floatplus'; f.textContent='+1'; btn.appendChild(f); setTimeout(()=>f.remove(),900); } }
+  $$('[data-metric="upvotes"]').forEach(el=>el.textContent=num(approved().reduce((a,p)=>a+p.upvotes,0)));
+}
+async function save(id){ const on = await db.toggleSave(id); $$(`[data-save="${id}"]`).forEach(b=>{ b.classList.toggle('!text-brand',on); const ic=$('svg,i',b); if(ic) ic.setAttribute('fill', on?'currentColor':'none'); }); toast(on?'Deck saved to your dashboard.':'Removed from saved decks.', on?'ok':'info'); }
+
+/* ── Card ──────────────────────────────────────────────────── */
+function card(p, i=0){
+  const up = state.upvoted.has(p.id), sv = state.saved.has(p.id);
+  const pct = Math.min(100, Math.round((p.committed||0)/p.target*100));
+  return `
+  <article class="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 overflow-hidden lift reveal" style="--d:${(i%6)*70}ms">
+    <a href="#/pitch/${p.id}" class="relative block h-40 bg-gradient-to-br ${CAT_STYLE[p.category]} overflow-hidden">
+      <div class="absolute inset-0 opacity-30 gridbg"></div>
+      <div class="absolute -right-8 -bottom-10 h-40 w-40 rounded-full bg-white/15 blur-2xl"></div>
+      <div class="absolute left-5 top-5">${logoHTML(p,'h-14 w-14 text-lg')}</div>
+      <div class="absolute right-4 top-4 flex gap-1.5">
+        <button data-save="${p.id}" aria-label="Save deck" onclick="event.preventDefault();event.stopPropagation();save('${p.id}')" class="grid place-items-center h-8 w-8 rounded-lg bg-black/25 backdrop-blur text-white hover:bg-black/40 transition ${sv?'!text-brand':''}"><i data-lucide="bookmark" class="h-4 w-4" ${sv?'fill="currentColor"':''}></i></button>
+      </div>
+      <div class="absolute left-5 bottom-4 right-5 flex items-end justify-between">
+        <div class="text-white/90 text-[11px] font-medium flex items-center gap-1.5"><i data-lucide="eye" class="h-3.5 w-3.5"></i>${num(p.views)} views</div>
+        <div class="text-white text-xs font-semibold px-2 py-1 rounded-md bg-black/25 backdrop-blur">${pct}% committed</div>
+      </div>
+      <span class="sweep"></span>
+    </a>
+    <div class="flex flex-col flex-1 p-5">
+      <div class="flex items-center gap-2 flex-wrap">${catChip(p.category)}${stageChip(p.stage)}</div>
+      <a href="#/pitch/${p.id}" class="mt-3 font-display font-bold text-lg leading-snug tracking-tight group-hover:text-brand transition">${esc(p.title)}</a>
+      <p class="mt-1.5 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">${esc(p.tagline)}</p>
+      <div class="mt-4 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <span class="grid place-items-center h-6 w-6 rounded-full bg-gradient-to-br ${p.founder.color} text-[9px] font-bold text-white">${esc(p.founder.initials)}</span>
+        <span class="truncate">${esc(p.founder.name)}</span>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-3">
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Raising</p>
+          <p class="font-display font-bold text-emerald-600 dark:text-emerald-400 text-lg leading-tight">${money(p.target)}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button data-upvote="${p.id}" onclick="upvote('${p.id}',this)" class="relative inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-semibold hover:border-fund hover:text-emerald-500 transition ${up?'!border-fund !text-emerald-500 bg-fund/10':''}"><i data-lucide="arrow-big-up" class="h-4 w-4" ${up?'fill="currentColor"':''}></i><span data-count>${num(p.upvotes)}</span></button>
+          <a href="#/pitch/${p.id}" class="inline-flex items-center gap-1 h-9 px-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-semibold hover:bg-brand dark:hover:bg-brand dark:hover:text-white transition">View Deck <i data-lucide="arrow-up-right" class="h-3.5 w-3.5"></i></a>
+        </div>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* ── Filtering ─────────────────────────────────────────────── */
+function filtered(){
+  const f=state.filters, q=f.q.trim().toLowerCase();
+  let list = approved().filter(p => (f.cat==='All'||p.category===f.cat) && (f.stage==='All'||p.stage===f.stage) && (!q || [p.title,p.tagline,p.category,p.founder.name,p.description].join(' ').toLowerCase().includes(q)));
+  if(f.sort==='upvotes') list.sort((a,b)=>b.upvotes-a.upvotes);
+  if(f.sort==='latest') list.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  if(f.sort==='target') list.sort((a,b)=>b.target-a.target);
+  if(f.sort==='progress') list.sort((a,b)=>(b.committed/b.target)-(a.committed/a.target));
+  return list;
+}
+function renderGrid(){
+  const grid=$('#grid'); if(!grid) return;
+  const list=filtered();
+  $('#resultCount').textContent = `${list.length} pitch${list.length===1?'':'es'}`;
+  grid.innerHTML = list.length ? list.map(card).join('') : `<div class="col-span-full rounded-2xl border border-dashed border-slate-300 dark:border-white/10 p-14 text-center"><i data-lucide="search-x" class="h-8 w-8 mx-auto text-slate-400"></i><p class="mt-3 font-semibold">No pitches match those filters</p><p class="text-sm text-slate-500 mt-1">Try another category or clear your search.</p><button onclick="resetFilters()" class="mt-5 h-10 px-4 rounded-xl bg-brand text-white text-sm font-semibold">Clear filters</button></div>`;
+  $$('#catChips button').forEach(b=>b.classList.toggle('chip-active', b.dataset.cat===state.filters.cat));
+  icons(); observeReveal();
+}
+function resetFilters(){ state.filters={q:'',cat:'All',stage:'All',sort:'upvotes'}; $('#navSearch').value=''; if($('#stageSel')) $('#stageSel').value='All'; if($('#sortSel')) $('#sortSel').value='upvotes'; renderGrid(); }
+function setCat(c){ state.filters.cat=c; $('#catMenu').classList.add('hidden'); $('#mobileMenu').classList.add('hidden'); if(!$('#grid')){ location.hash='#/explore'; setTimeout(renderGrid,50); } else { renderGrid(); $('#directory').scrollIntoView({behavior:'smooth',block:'start'}); } }
+
+/* ── HOME ──────────────────────────────────────────────────── */
+function renderHome(scrollToDir=false){
+  const A=approved(); const raised=A.reduce((a,p)=>a+(p.committed||0),0); const investors=1284;
+  const kin = (t,d)=> t.split(' ').map((w,i)=>`<span class="kin"><span style="--kd:${d+i*70}ms">${w}</span></span>`).join(' ');
+  $('#app').innerHTML = `
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 gridbg"></div>
+    <div class="beam" style="top:0"></div>
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[820px] rounded-full bg-brand/20 blur-[120px] pointer-events-none"></div>
+    <div class="relative mx-auto max-w-7xl px-5 pt-10 sm:pt-16 pb-16 grid lg:grid-cols-12 gap-10 items-center">
+      <div class="lg:col-span-7">
+        <div class="reveal in inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-xs font-semibold text-brand dark:text-indigo-300"><span class="h-1.5 w-1.5 rounded-full bg-fund animate-pulse"></span> ${A.length} live rounds · Curated weekly</div>
+        <h1 class="mt-5 font-display font-bold tracking-tight text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-7xl">
+          ${kin('Where Ideas',0)}<br/><span class="bg-gradient-to-r from-brand via-violet-400 to-fund bg-clip-text text-transparent">${kin('Meet Capital.',260)}</span>
+        </h1>
+        <p class="reveal in mt-6 max-w-xl text-lg text-slate-600 dark:text-slate-400" style="--d:400ms">Founders publish their pitch decks. Investors and the community discover, upvote and back the companies they believe in — with a direct line to the founder.</p>
+        <div class="reveal in mt-8 flex flex-wrap gap-3" style="--d:520ms">
+          <a href="#/submit" class="group relative overflow-hidden inline-flex items-center gap-2 h-12 px-6 rounded-xl bg-brand text-white font-semibold shadow-xl shadow-brand/30 hover:bg-indigo-500 transition"><span class="sweep"></span><i data-lucide="rocket" class="h-4.5 w-4.5"></i> Submit Your Pitch</a>
+          <a href="#/explore" class="inline-flex items-center gap-2 h-12 px-6 rounded-xl border border-slate-300 dark:border-white/15 font-semibold hover:border-brand hover:text-brand transition"><i data-lucide="compass" class="h-4.5 w-4.5"></i> Explore Pitches</a>
+        </div>
+        <div class="reveal in mt-10 grid grid-cols-3 gap-3 max-w-lg" style="--d:640ms">
+          ${[['Total Raised', short(raised), 'text-emerald-500', 'trending-up','raised'],['Pitches Posted', A.length, 'text-brand', 'presentation','pitches'],['Active Investors', num(investors), 'text-violet-400', 'users','inv']].map(([l,v,c,ic,k])=>`
+          <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur p-4">
+            <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400"><i data-lucide="${ic}" class="h-3.5 w-3.5 ${c}"></i>${l}</div>
+            <div class="mt-1 font-display font-bold text-2xl ${c}" data-metric="${k}">${v}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="lg:col-span-5 relative hidden sm:block" id="stackWrap">
+        <div class="deckstack relative h-[420px] floaty" id="deckstack">
+          ${A.slice(0,3).map((p,i)=>`
+          <a href="#/pitch/${p.id}" class="slide3d absolute inset-x-${i*6} rounded-2xl border border-white/15 bg-gradient-to-br ${CAT_STYLE[p.category]} p-6 text-white shadow-2xl shadow-black/40" style="top:${i*44}px; z-index:${3-i}; transform:translateZ(${-i*60}px) scale(${1-i*.06}); opacity:${1-i*.22}; height:300px">
+            <div class="flex items-center justify-between"><div class="text-xs font-semibold px-2 py-1 rounded-md bg-white/20">${p.category} · ${p.stage}</div><div class="text-xs font-semibold flex items-center gap-1"><i data-lucide="arrow-big-up" class="h-3.5 w-3.5" fill="currentColor"></i>${num(p.upvotes)}</div></div>
+            <div class="mt-8 font-display font-bold text-3xl tracking-tight">${esc(p.title)}</div>
+            <p class="mt-2 text-white/80 text-sm line-clamp-2 max-w-xs">${esc(p.tagline)}</p>
+            <div class="absolute left-6 right-6 bottom-6"><div class="flex justify-between text-xs mb-2"><span>${money(p.committed)} committed</span><span>${money(p.target)}</span></div><div class="bar bg-white/20"><i style="width:${Math.round(p.committed/p.target*100)}%; background:linear-gradient(90deg,#fff,#d1fae5)"></i></div></div>
+          </a>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="relative border-y border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/[.03] overflow-hidden py-3">
+      <div class="ticker flex gap-10 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300 w-max">
+        ${[...A,...A].map(p=>`<span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-fund"></span><b class="font-semibold">${esc(p.title)}</b> raised <span class="text-emerald-500 font-semibold">${short(p.committed)}</span> of ${short(p.target)} · ${p.stage}</span>`).join('')}
+      </div>
+    </div>
+  </section>
+
+  <section id="directory" class="mx-auto max-w-7xl px-5 pt-14 scroll-mt-28">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 reveal">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-brand">Pitch Directory</p>
+        <h2 class="mt-2 font-display font-bold text-3xl sm:text-4xl tracking-tight">Discover this week's rounds</h2>
+      </div>
+      <p class="text-sm text-slate-500" id="resultCount"></p>
+    </div>
+    <div class="mt-6 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-ink2/70 backdrop-blur p-3 sm:p-4 flex flex-col lg:flex-row gap-3 lg:items-center reveal" style="--d:80ms">
+      <div id="catChips" class="flex gap-1.5 overflow-x-auto pb-1 lg:pb-0 -mx-1 px-1 scrollbar-none">
+        ${['All',...CATS].map(c=>`<button data-cat="${c}" onclick="setCat('${c}')" class="shrink-0 h-9 px-3.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium hover:border-brand transition ${state.filters.cat===c?'chip-active':''}">${c}</button>`).join('')}
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex gap-2">
+        <div class="relative flex-1 lg:flex-none"><i data-lucide="signal" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <select id="stageSel" class="field !pl-9 !pr-8 appearance-none w-full lg:w-44 font-medium"><option value="All">All stages</option>${STAGES.map(s=>`<option ${state.filters.stage===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="relative flex-1 lg:flex-none"><i data-lucide="arrow-up-down" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <select id="sortSel" class="field !pl-9 !pr-8 appearance-none w-full lg:w-48 font-medium">
+            <option value="upvotes" ${state.filters.sort==='upvotes'?'selected':''}>Most Upvoted</option><option value="latest" ${state.filters.sort==='latest'?'selected':''}>Latest</option><option value="target" ${state.filters.sort==='target'?'selected':''}>Target Raise</option><option value="progress" ${state.filters.sort==='progress'?'selected':''}>Round Progress</option>
+          </select></div>
+      </div>
+    </div>
+    <div id="grid" class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-5 mt-24">
+    <div class="relative overflow-hidden rounded-3xl border border-brand/30 bg-gradient-to-br from-brand via-indigo-600 to-violet-700 p-8 sm:p-14 text-white reveal">
+      <div class="absolute inset-0 gridbg opacity-40"></div>
+      <div class="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
+      <div class="relative grid md:grid-cols-2 gap-8 items-center">
+        <div><h3 class="font-display font-bold text-3xl sm:text-4xl tracking-tight">Ready to raise?</h3><p class="mt-3 text-white/80 max-w-md">Publish your deck in under 10 minutes. Reviewed within 48 hours and put in front of ${num(investors)} active investors.</p></div>
+        <div class="flex md:justify-end gap-3 flex-wrap"><a href="#/submit" class="inline-flex items-center gap-2 h-12 px-6 rounded-xl bg-white text-brand font-semibold shadow-xl hover:bg-slate-100 transition"><i data-lucide="rocket" class="h-4.5 w-4.5"></i> Submit a Pitch</a><a href="#/dashboard" class="inline-flex items-center gap-2 h-12 px-6 rounded-xl border border-white/40 font-semibold hover:bg-white/10 transition">My Dashboard</a></div>
+      </div>
+    </div>
+  </section>`;
+  $('#stageSel').onchange = e => { state.filters.stage=e.target.value; renderGrid(); };
+  $('#sortSel').onchange = e => { state.filters.sort=e.target.value; renderGrid(); };
+  renderGrid(); icons(); observeReveal();
+  // 3D parallax
+  const wrap=$('#stackWrap'), stack=$('#deckstack');
+  if(wrap){ wrap.onmousemove=e=>{ const r=wrap.getBoundingClientRect(); const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5; stack.style.transform=`perspective(1200px) rotateY(${x*14}deg) rotateX(${-y*12}deg)`; }; wrap.onmouseleave=()=>stack.style.transform=''; }
+  if(scrollToDir) setTimeout(()=>$('#directory').scrollIntoView({behavior:'smooth'}),60); else window.scrollTo({top:0});
+}
+
+/* ── PITCH DETAIL ──────────────────────────────────────────── */
+function slidesFor(p){ return [
+  {t:'cover', h:p.title, s:p.tagline},
+  {t:'text', h:'The Problem', s:p.problem, n:'01'},
+  {t:'text', h:'Our Solution', s:p.solution, n:'02'},
+  {t:'kpi', h:'Market Opportunity', k:[['TAM',p.market?.tam||'—'],['SAM',p.market?.sam||'—'],['SOM',p.market?.som||'—']], n:'03'},
+  {t:'kpi', h:'Traction', k:p.traction||[], n:'04'},
+  {t:'ask', h:'The Ask', s:`We're raising ${money(p.target)} at ${p.stage} to scale go-to-market and product. ${money(p.committed||0)} already committed.`, n:'05'}
+]; }
+function slideHTML(p, s){
+  const g=CAT_STYLE[p.category];
+  if(s.t==='cover') return `<div class="deckpage absolute inset-0 bg-gradient-to-br ${g} text-white p-[6%] flex flex-col justify-between"><div class="absolute inset-0 gridbg opacity-50"></div><div class="relative flex items-center gap-3">${logoHTML(p,'h-12 w-12 text-base')}<span class="text-xs font-semibold tracking-wider uppercase text-white/80">Pitch Deck · ${new Date(p.createdAt).getFullYear()}</span></div><div class="relative"><h3 class="font-display font-bold text-[clamp(1.6rem,5cqw,3.4rem)] leading-none tracking-tight">${esc(s.h)}</h3><p class="mt-3 text-white/85 text-[clamp(.8rem,1.8cqw,1.15rem)] max-w-[70%]">${esc(s.s)}</p></div><div class="relative text-[11px] text-white/70">${esc(p.founder.name)} · ${esc(p.founder.title)}</div></div>`;
+  if(s.t==='kpi') return `<div class="deckpage absolute inset-0 bg-white dark:bg-ink3 p-[6%] flex flex-col"><div class="flex items-center justify-between text-xs text-slate-400"><span class="font-semibold text-brand">${s.n}</span><span>${esc(p.title)}</span></div><h3 class="mt-3 font-display font-bold text-[clamp(1.3rem,4cqw,2.6rem)] tracking-tight">${esc(s.h)}</h3><div class="mt-auto grid grid-cols-${Math.min(4,Math.max(2,s.k.length))} gap-3">${s.k.map(([l,v])=>`<div class="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-[4%]"><div class="text-[clamp(.55rem,1.3cqw,.75rem)] uppercase tracking-wider text-slate-400 font-semibold">${esc(l)}</div><div class="mt-1 font-display font-bold text-[clamp(1rem,3.2cqw,2rem)] text-emerald-500">${esc(v)}</div></div>`).join('')}</div></div>`;
+  if(s.t==='ask') return `<div class="deckpage absolute inset-0 bg-ink text-white p-[6%] flex flex-col"><div class="absolute inset-0 gridbg opacity-60"></div><div class="relative flex items-center justify-between text-xs text-slate-400"><span class="font-semibold text-brand">${s.n}</span><span>${esc(p.title)}</span></div><h3 class="relative mt-3 font-display font-bold text-[clamp(1.3rem,4cqw,2.6rem)] tracking-tight">${esc(s.h)}</h3><div class="relative mt-2 font-display font-bold text-[clamp(2rem,7cqw,4.5rem)] bg-gradient-to-r from-fund to-emerald-300 bg-clip-text text-transparent leading-none">${money(p.target)}</div><p class="relative mt-4 text-slate-300 text-[clamp(.75rem,1.6cqw,1rem)] max-w-[75%]">${esc(s.s)}</p><div class="relative mt-auto flex items-center gap-3 text-[11px] text-slate-400"><i data-lucide="mail" class="h-3.5 w-3.5"></i> Contact the founder via PitchDeck Hub</div></div>`;
+  return `<div class="deckpage absolute inset-0 bg-white dark:bg-ink3 p-[6%] flex flex-col"><div class="flex items-center justify-between text-xs text-slate-400"><span class="font-semibold text-brand">${s.n}</span><span>${esc(p.title)}</span></div><h3 class="mt-3 font-display font-bold text-[clamp(1.3rem,4cqw,2.6rem)] tracking-tight">${esc(s.h)}</h3><p class="mt-4 text-slate-600 dark:text-slate-300 text-[clamp(.8rem,1.9cqw,1.2rem)] leading-relaxed max-w-[85%]">${esc(s.s)}</p><div class="mt-auto h-1.5 w-24 rounded-full bg-gradient-to-r ${g}"></div></div>`;
+}
+function deckGo(dir){ const p=state.pitches.find(x=>x.id===state.currentId); const n=slidesFor(p).length; state.deckPage=(state.deckPage+dir+n)%n; renderDeck(p); }
+function deckTo(i){ state.deckPage=i; renderDeck(state.pitches.find(x=>x.id===state.currentId)); }
+function renderDeck(p){
+  const slides=slidesFor(p), i=state.deckPage, frame=$('#deckFrame'); if(!frame) return;
+  frame.innerHTML = p.deckUrl ? `<iframe src="${esc(p.deckUrl)}#page=${i+1}&view=Fit" class="absolute inset-0 w-full h-full" title="Pitch deck PDF"></iframe>` : slideHTML(p,slides[i]);
+  $('#deckPageNo').textContent=`${i+1} / ${slides.length}`;
+  $('#deckDots').innerHTML=slides.map((_,k)=>`<button onclick="deckTo(${k})" class="h-1.5 rounded-full transition-all ${k===i?'w-6 bg-brand':'w-1.5 bg-slate-300 dark:bg-white/20 hover:bg-brand/60'}"></button>`).join('');
+  $('#deckProgress').style.width=((i+1)/slides.length*100)+'%'; icons();
+}
+function toggleFS(){ const v=$('#deckViewer'); if(document.fullscreenElement) document.exitFullscreen(); else v.requestFullscreen?.(); }
+function renderPitch(id){
+  const p=state.pitches.find(x=>x.id===id);
+  if(!p){ $('#app').innerHTML=`<div class="mx-auto max-w-2xl px-5 py-24 text-center"><i data-lucide="file-question" class="h-10 w-10 mx-auto text-slate-400"></i><h2 class="mt-4 font-display font-bold text-2xl">Pitch not found</h2><a href="#/explore" class="mt-6 inline-flex h-11 px-5 items-center rounded-xl bg-brand text-white font-semibold">Back to directory</a></div>`; icons(); return; }
+  state.currentId=id; state.deckPage=0; db.view(id);
+  const up=state.upvoted.has(id), sv=state.saved.has(id), pct=Math.min(100,Math.round((p.committed||0)/p.target*100));
+  const hist=history(p); const conv=((p.upvotes/(p.views||1))*100).toFixed(1); const contacts=state.contacts.filter(c=>c.pitchId===id); const investorsIn = 12 + Math.round(seeded(id+'i')()*40);
+  const related = approved().filter(x=>x.id!==id && (x.category===p.category||x.stage===p.stage)).slice(0,3);
+  const typeSplit=['VC','Angel','Corporate','Community'].map((t,k)=>[t, contacts.filter(c=>c.investorType===t).length + [7,11,3,5][k]]);
+  const tot=typeSplit.reduce((a,[,v])=>a+v,0);
+  $('#app').innerHTML = `
+  <div class="view-enter mx-auto max-w-7xl px-5">
+    <a href="#/explore" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-brand transition"><i data-lucide="arrow-left" class="h-4 w-4"></i> Back to directory</a>
+    <div class="mt-5 flex flex-col md:flex-row md:items-center gap-5">
+      ${logoHTML(p,'h-16 w-16 text-xl')}
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">${catChip(p.category)}${stageChip(p.stage)}${p.status!=='Approved'?statusChip(p.status):''}<span class="text-xs text-slate-400 flex items-center gap-1"><i data-lucide="eye" class="h-3.5 w-3.5"></i>${num(p.views)} views</span></div>
+        <h1 class="mt-2 font-display font-bold text-3xl sm:text-4xl tracking-tight">${esc(p.title)}</h1>
+        <p class="mt-1 text-slate-500 dark:text-slate-400 text-lg">${esc(p.tagline)}</p>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <button data-save="${p.id}" onclick="save('${p.id}')" class="inline-flex items-center gap-2 h-11 px-4 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-semibold hover:border-brand transition ${sv?'!text-brand':''}"><i data-lucide="bookmark" class="h-4 w-4" ${sv?'fill="currentColor"':''}></i> Save</button>
+        <button onclick="navigator.clipboard?.writeText(location.href);toast('Link copied to clipboard.','info')" class="inline-flex items-center gap-2 h-11 px-4 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-semibold hover:border-brand transition"><i data-lucide="share-2" class="h-4 w-4"></i> Share</button>
+      </div>
+    </div>
+
+    <div class="mt-8 grid lg:grid-cols-3 gap-8">
+      <!-- LEFT -->
+      <div class="lg:col-span-2 space-y-8">
+        <div id="deckViewer" class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-3 sm:p-4 shadow-xl shadow-black/5">
+          <div class="deckframe w-full">
+            <div class="flex items-center justify-between mb-3 px-1">
+              <div class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="file-text" class="h-4 w-4 text-brand"></i> Pitch Deck ${p.deckUrl?'<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-fund/10 text-emerald-500">PDF</span>':'<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-brand/10 text-brand">Interactive</span>'}</div>
+              <div class="flex items-center gap-1">
+                <span id="deckPageNo" class="text-xs text-slate-400 mr-2 tabular-nums"></span>
+                <button onclick="deckGo(-1)" class="grid place-items-center h-8 w-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5" aria-label="Previous"><i data-lucide="chevron-left" class="h-4 w-4"></i></button>
+                <button onclick="deckGo(1)" class="grid place-items-center h-8 w-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5" aria-label="Next"><i data-lucide="chevron-right" class="h-4 w-4"></i></button>
+                <button onclick="toggleFS()" class="grid place-items-center h-8 w-8 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5" aria-label="Fullscreen"><i data-lucide="maximize-2" class="h-4 w-4"></i></button>
+              </div>
+            </div>
+            <div id="deckFrame" class="relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-ink" style="container-type:inline-size"></div>
+            <div class="h-0.5 mt-3 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden"><div id="deckProgress" class="h-full bg-brand transition-all duration-500" style="width:0"></div></div>
+            <div class="mt-3 flex items-center justify-between px-1"><div id="deckDots" class="flex gap-1.5"></div><span class="text-[11px] text-slate-400 hidden sm:inline">← → to navigate</span></div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-4">
+          <div class="flex items-center gap-2 text-sm font-semibold mb-3"><i data-lucide="play-circle" class="h-4 w-4 text-brand"></i> Video Pitch</div>
+          ${p.videoUrl ? `<div class="aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-white/10"><iframe class="w-full h-full" src="${esc(p.videoUrl)}" title="Video pitch" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+          : `<div class="aspect-video rounded-xl border border-dashed border-slate-300 dark:border-white/10 grid place-items-center bg-slate-50 dark:bg-white/[.02]"><div class="text-center"><div class="mx-auto grid place-items-center h-14 w-14 rounded-full bg-brand/10 text-brand"><i data-lucide="video-off" class="h-6 w-6"></i></div><p class="mt-3 text-sm font-medium">No video pitch yet</p><p class="text-xs text-slate-400">The founder hasn't added a YouTube/Vimeo embed.</p></div></div>`}
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-rose-500/20 bg-rose-500/[.04] p-6"><div class="flex items-center gap-2 text-rose-500 text-xs font-semibold uppercase tracking-wider"><i data-lucide="alert-triangle" class="h-4 w-4"></i> Problem</div><p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">${esc(p.problem)}</p></div>
+          <div class="rounded-2xl border border-fund/25 bg-fund/[.04] p-6"><div class="flex items-center gap-2 text-emerald-500 text-xs font-semibold uppercase tracking-wider"><i data-lucide="lightbulb" class="h-4 w-4"></i> Solution</div><p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">${esc(p.solution)}</p></div>
+        </div>
+        <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-6"><h3 class="font-display font-bold text-lg">About ${esc(p.title)}</h3><p class="mt-3 text-slate-600 dark:text-slate-300 leading-relaxed">${esc(p.description)}</p>
+          <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">${(p.traction||[]).map(([l,v])=>`<div class="rounded-xl bg-slate-50 dark:bg-white/5 p-3"><div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">${esc(l)}</div><div class="font-display font-bold text-lg">${esc(v)}</div></div>`).join('')}</div></div>
+      </div>
+
+      <!-- RIGHT -->
+      <aside class="space-y-5 lg:sticky lg:top-28 self-start">
+        <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-5">
+          <div class="flex items-center gap-3">
+            <div class="grid place-items-center h-12 w-12 rounded-full bg-gradient-to-br ${p.founder.color} text-white font-bold">${esc(p.founder.initials)}</div>
+            <div class="min-w-0"><div class="font-semibold flex items-center gap-1.5">${esc(p.founder.name)} <i data-lucide="badge-check" class="h-4 w-4 text-brand"></i></div><div class="text-xs text-slate-500 truncate">${esc(p.founder.title)}</div></div>
+            <a href="${esc(p.founder.linkedin||'#')}" class="ml-auto grid place-items-center h-9 w-9 rounded-lg border border-slate-200 dark:border-white/10 hover:border-brand hover:text-brand transition" aria-label="LinkedIn"><i data-lucide="linkedin" class="h-4 w-4"></i></a>
+          </div>
+          <div class="mt-5">
+            <div class="flex items-end justify-between"><div><div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Committed</div><div class="font-display font-bold text-2xl text-emerald-500">${money(p.committed||0)}</div></div><div class="text-right"><div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Target</div><div class="font-display font-bold text-lg">${money(p.target)}</div></div></div>
+            <div class="bar mt-3"><i id="raiseBar"></i></div>
+            <div class="mt-2 flex justify-between text-xs text-slate-500"><span>${pct}% of round</span><span>${investorsIn} investors in</span></div>
+          </div>
+          <div class="mt-5 grid grid-cols-2 gap-2">
+            <button data-upvote="${p.id}" onclick="upvote('${p.id}',this)" class="relative inline-flex items-center justify-center gap-2 h-12 rounded-xl border border-slate-200 dark:border-white/10 font-semibold hover:border-fund hover:text-emerald-500 transition ${up?'!border-fund !text-emerald-500 bg-fund/10':''}"><i data-lucide="arrow-big-up" class="h-5 w-5" ${up?'fill="currentColor"':''}></i><span data-count>${num(p.upvotes)}</span></button>
+            <button onclick="openContact('${p.id}')" class="group relative overflow-hidden inline-flex items-center justify-center gap-2 h-12 rounded-xl bg-brand text-white font-semibold shadow-lg shadow-brand/30 hover:bg-indigo-500 transition"><span class="sweep"></span><i data-lucide="mail" class="h-4.5 w-4.5"></i> Contact</button>
+          </div>
+          <p class="mt-3 text-[11px] text-slate-400 text-center flex items-center justify-center gap-1"><i data-lucide="shield-check" class="h-3.5 w-3.5"></i> Founder typically replies within 2 days</p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-5">
+          <div class="flex items-center justify-between"><div class="flex items-center gap-2 text-sm font-semibold"><i data-lucide="bar-chart-3" class="h-4 w-4 text-brand"></i> Pitch Analytics</div><span class="text-[10px] text-slate-400">Last 14 days</span></div>
+          <div class="mt-3">${spark(hist,'#6366F1',200,44)}</div>
+          <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div class="rounded-xl bg-slate-50 dark:bg-white/5 p-2.5"><div class="text-[10px] text-slate-400 uppercase font-semibold">Views</div><div class="font-display font-bold">${num(p.views)}</div></div>
+            <div class="rounded-xl bg-slate-50 dark:bg-white/5 p-2.5"><div class="text-[10px] text-slate-400 uppercase font-semibold">Upvote rate</div><div class="font-display font-bold text-emerald-500">${conv}%</div></div>
+            <div class="rounded-xl bg-slate-50 dark:bg-white/5 p-2.5"><div class="text-[10px] text-slate-400 uppercase font-semibold">Inquiries</div><div class="font-display font-bold">${contacts.length + 6}</div></div>
+          </div>
+          <div class="mt-4"><div class="text-[10px] text-slate-400 uppercase font-semibold mb-2">Investor interest</div>
+            <div class="flex h-2 rounded-full overflow-hidden gap-px">${typeSplit.map(([t,v],k)=>`<div title="${t}" style="width:${v/tot*100}%" class="${['bg-brand','bg-violet-400','bg-fund','bg-amber-400'][k]}"></div>`).join('')}</div>
+            <div class="mt-2 grid grid-cols-2 gap-1.5 text-xs text-slate-500">${typeSplit.map(([t,v],k)=>`<div class="flex items-center gap-1.5"><span class="h-2 w-2 rounded-full ${['bg-brand','bg-violet-400','bg-fund','bg-amber-400'][k]}"></span>${t} <b class="ml-auto text-slate-700 dark:text-slate-200">${Math.round(v/tot*100)}%</b></div>`).join('')}</div></div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-5 text-sm">
+          <div class="text-[10px] text-slate-400 uppercase font-semibold mb-2">Round details</div>
+          ${[['Stage',p.stage],['Sector',p.category],['Instrument',p.stage==='Series A'?'Priced equity':'SAFE / Post-money'],['Min. ticket', p.target>=2e6?'$25,000':'$5,000'],['Posted', new Date(p.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})]].map(([l,v])=>`<div class="flex justify-between py-2 border-b border-slate-100 dark:border-white/5 last:border-0"><span class="text-slate-500">${l}</span><span class="font-medium">${esc(v)}</span></div>`).join('')}
+        </div>
+      </aside>
+    </div>
+
+    ${related.length?`<section class="mt-20"><h3 class="font-display font-bold text-2xl tracking-tight">Similar rounds</h3><div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">${related.map(card).join('')}</div></section>`:''}
+  </div>`;
+  renderDeck(p); icons(); observeReveal(); window.scrollTo({top:0});
+  requestAnimationFrame(()=>setTimeout(()=>{ const b=$('#raiseBar'); if(b) b.style.width=pct+'%'; },80));
+}
+
+/* ── CONTACT MODAL ─────────────────────────────────────────── */
+function closeModal(){ const m=$('#modal-root'); m.innerHTML=''; document.body.classList.remove('no-scroll'); }
+function modalShell(inner, wide=false){ $('#modal-root').innerHTML=`<div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-6"><div class="absolute inset-0 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm fade-in" onclick="closeModal()"></div><div class="sheet-enter relative w-full ${wide?'max-w-2xl':'max-w-lg'} rounded-t-3xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 shadow-2xl p-6 sm:p-8 max-h-[92vh] overflow-y-auto">${inner}</div></div>`; document.body.classList.add('no-scroll'); icons(); }
+function openContact(id){
+  const p=state.pitches.find(x=>x.id===id);
+  modalShell(`
+    <button onclick="closeModal()" class="absolute right-4 top-4 grid place-items-center h-9 w-9 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"><i data-lucide="x" class="h-4 w-4"></i></button>
+    <div class="flex items-center gap-3">${logoHTML(p,'h-11 w-11 text-sm')}<div><p class="text-xs text-slate-400">Contact founder</p><h3 class="font-display font-bold text-xl">${esc(p.founder.name)} · ${esc(p.title)}</h3></div></div>
+    <form id="contactForm" class="mt-6 space-y-4" novalidate>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="text-xs font-semibold text-slate-500">Your name</label><input name="name" class="field mt-1" placeholder="Jane Doe" value="${esc(state.user?.name||'')}"/><p class="hint text-xs text-rose-500 mt-1 hidden"></p></div>
+        <div><label class="text-xs font-semibold text-slate-500">Email</label><input name="email" type="email" class="field mt-1" placeholder="jane@fund.com" value="${esc(state.user?.email||'')}"/><p class="hint text-xs text-rose-500 mt-1 hidden"></p></div>
+      </div>
+      <div><label class="text-xs font-semibold text-slate-500">Investor type</label>
+        <div class="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-2" id="invType">${['Angel','VC','Corporate','Community'].map((t,i)=>`<label class="cursor-pointer"><input type="radio" name="investorType" value="${t}" class="peer sr-only" ${i===0?'checked':''}/><div class="h-10 rounded-xl border border-slate-200 dark:border-white/10 grid place-items-center text-sm font-medium peer-checked:border-brand peer-checked:bg-brand/10 peer-checked:text-brand transition">${t}</div></label>`).join('')}</div></div>
+      <div><label class="text-xs font-semibold text-slate-500">Message</label><textarea name="message" rows="4" class="field mt-1 resize-none" placeholder="Tell ${esc(p.founder.name.split(' ')[0])} why you're interested, your typical check size and next steps…"></textarea><p class="hint text-xs text-rose-500 mt-1 hidden"></p></div>
+      <label class="flex items-start gap-2 text-xs text-slate-500"><input type="checkbox" name="accredited" class="mt-0.5 accent-indigo-500"/> I confirm I'm contacting the founder in a professional capacity and agree to the community guidelines.</label>
+      <button class="group relative overflow-hidden w-full h-12 rounded-xl bg-brand text-white font-semibold shadow-lg shadow-brand/30 hover:bg-indigo-500 transition inline-flex items-center justify-center gap-2"><span class="sweep"></span><i data-lucide="send" class="h-4 w-4"></i> Send message</button>
+    </form>`);
+  $('#contactForm').onsubmit = async e => {
+    e.preventDefault(); const f=e.target, d=Object.fromEntries(new FormData(f)); let ok=true;
+    const check=(n,cond,msg)=>{ const el=f[n]; const hint=el.closest('div').querySelector('.hint'); el.classList.toggle('err',!cond); if(hint){ hint.textContent=msg; hint.classList.toggle('hidden',cond); } if(!cond) ok=false; };
+    check('name', d.name.trim().length>=2, 'Please enter your name.');
+    check('email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email), 'Enter a valid email address.');
+    check('message', d.message.trim().length>=20, 'Message should be at least 20 characters.');
+    if(!ok) return;
+    const btn=f.querySelector('button'); btn.disabled=true; btn.innerHTML='<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Sending…'; icons();
+    await db.contact({ id:'c'+Date.now(), pitchId:id, name:d.name, email:d.email, investorType:d.investorType, message:d.message, createdAt:new Date().toISOString() });
+    await new Promise(r=>setTimeout(r,650));
+    modalShell(`<div class="text-center py-6"><div class="mx-auto grid place-items-center h-16 w-16 rounded-full bg-fund/15 text-emerald-500 pop"><i data-lucide="check" class="h-8 w-8"></i></div><h3 class="mt-5 font-display font-bold text-2xl">Message sent</h3><p class="mt-2 text-slate-500 text-sm">${esc(p.founder.name)} will receive your note and reply to <b>${esc(d.email)}</b>. We'll notify you when they respond.</p><button onclick="closeModal()" class="mt-6 h-11 px-6 rounded-xl bg-brand text-white font-semibold">Done</button></div>`);
+    toast('Introduction request delivered to the founder.');
+  };
+}
+
+/* ── AUTH ──────────────────────────────────────────────────── */
+function renderAuthBtn(){
+  const b=$('#authBtn'); if(state.user){ b.innerHTML=`<span class="grid place-items-center h-7 w-7 rounded-lg bg-gradient-to-br from-brand to-violet-500 text-white text-[11px] font-bold">${esc(state.user.initials)}</span><span class="hidden sm:inline max-w-[90px] truncate">${esc(state.user.name)}</span>`; b.onclick=openProfileMenu; }
+  else { b.innerHTML=`<span class="grid place-items-center h-7 w-7 rounded-lg bg-slate-100 dark:bg-white/10"><i data-lucide="user" class="h-4 w-4"></i></span><span class="hidden sm:inline">Sign in</span>`; b.onclick=openAuth; }
+  icons();
+}
+function openProfileMenu(){
+  modalShell(`<button onclick="closeModal()" class="absolute right-4 top-4 grid place-items-center h-9 w-9 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"><i data-lucide="x" class="h-4 w-4"></i></button>
+  <div class="flex items-center gap-4"><span class="grid place-items-center h-14 w-14 rounded-2xl bg-gradient-to-br from-brand to-violet-500 text-white text-lg font-bold">${esc(state.user.initials)}</span><div><h3 class="font-display font-bold text-xl">${esc(state.user.name)}</h3><p class="text-sm text-slate-500">${esc(state.user.email)}</p></div></div>
+  <div class="mt-6 grid gap-2">
+    <a href="#/dashboard" onclick="closeModal()" class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-white/10 hover:border-brand transition"><i data-lucide="layout-dashboard" class="h-4 w-4 text-brand"></i><span class="text-sm font-medium">Founder Dashboard</span><i data-lucide="chevron-right" class="h-4 w-4 ml-auto text-slate-400"></i></a>
+    <a href="#/submit" onclick="closeModal()" class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-white/10 hover:border-brand transition"><i data-lucide="rocket" class="h-4 w-4 text-brand"></i><span class="text-sm font-medium">Submit a new pitch</span><i data-lucide="chevron-right" class="h-4 w-4 ml-auto text-slate-400"></i></a>
+    <button onclick="db.signOut().then(()=>{closeModal();renderAuthBtn();route();toast('Signed out.','info')})" class="flex items-center gap-3 p-3 rounded-xl border border-rose-500/20 text-rose-500 hover:bg-rose-500/5 transition"><i data-lucide="log-out" class="h-4 w-4"></i><span class="text-sm font-medium">Sign out</span></button>
+  </div>`);
+}
+function openAuth(after){
+  modalShell(`<button onclick="closeModal()" class="absolute right-4 top-4 grid place-items-center h-9 w-9 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"><i data-lucide="x" class="h-4 w-4"></i></button>
+  <div class="grid place-items-center h-12 w-12 rounded-xl bg-gradient-to-br from-brand to-violet-500 text-white"><i data-lucide="presentation" class="h-5 w-5"></i></div>
+  <h3 class="mt-4 font-display font-bold text-2xl">Welcome back</h3><p class="text-sm text-slate-500 mt-1">Sign in with a magic link${db.live?'':' — demo mode signs you in instantly as a founder with 3 pitches'}.</p>
+  <form id="authForm" class="mt-6 space-y-3" novalidate>
+    <input name="email" type="email" class="field" placeholder="ava@ledgerly.co" value="${db.live?'':'ava@ledgerly.co'}"/>
+    <button class="w-full h-12 rounded-xl bg-brand text-white font-semibold shadow-lg shadow-brand/30 hover:bg-indigo-500 transition inline-flex items-center justify-center gap-2"><i data-lucide="wand-2" class="h-4 w-4"></i> Continue with email</button>
+  </form>
+  <div class="my-5 flex items-center gap-3 text-xs text-slate-400"><span class="h-px flex-1 bg-slate-200 dark:bg-white/10"></span>or<span class="h-px flex-1 bg-slate-200 dark:bg-white/10"></span></div>
+  <div class="grid grid-cols-2 gap-2">
+    <button onclick="$('#authForm').requestSubmit()" class="h-11 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium hover:border-brand transition inline-flex items-center justify-center gap-2"><i data-lucide="github" class="h-4 w-4"></i> GitHub</button>
+    <button onclick="$('#authForm').requestSubmit()" class="h-11 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium hover:border-brand transition inline-flex items-center justify-center gap-2"><i data-lucide="linkedin" class="h-4 w-4"></i> LinkedIn</button>
+  </div>`);
+  $('#authForm').onsubmit = async e => { e.preventDefault(); const em=e.target.email.value.trim()||'ava@ledgerly.co'; if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ e.target.email.classList.add('err'); return; } const r=await db.signIn(em); closeModal(); if(r.magic){ toast('Magic link sent — check your inbox.','info'); } else { renderAuthBtn(); toast(`Signed in as ${state.user.name}.`); if(typeof after==='function') after(); else route(); } };
+}
+
+/* ── SUBMIT ────────────────────────────────────────────────── */
+const form = { step:1, data:{ title:'', tagline:'', description:'', problem:'', solution:'', category:'', stage:'', videoUrl:'', target:'', founderName:'', founderTitle:'', email:'', linkedin:'' }, file:null, deckUrl:'' };
+function renderSubmit(){
+  const d=form.data, s=form.step;
+  const steps=[['Basic Info','info'],['Deck & Media','file-up'],['Funding & Contact','wallet'],['Review','check-circle-2']];
+  const fld=(name,label,el,hint='')=>`<div><label class="text-xs font-semibold text-slate-500">${label}</label>${el}<p class="hint text-xs text-rose-500 mt-1 hidden" data-hint="${name}"></p>${hint?`<p class="text-[11px] text-slate-400 mt-1">${hint}</p>`:''}</div>`;
+  let body='';
+  if(s===1) body=`
+    <div class="grid sm:grid-cols-2 gap-5">
+      ${fld('title','Project name',`<input name="title" class="field mt-1" placeholder="e.g. NeuroLens AI" value="${esc(d.title)}"/>`)}
+      ${fld('tagline','Short tagline',`<input name="tagline" class="field mt-1" maxlength="120" placeholder="One sentence that makes an investor lean in" value="${esc(d.tagline)}"/>`,'Max 120 characters')}
+    </div>
+    ${fld('description','Full description',`<textarea name="description" rows="4" class="field mt-1 resize-none" placeholder="What are you building, for whom, and why now?">${esc(d.description)}</textarea>`)}
+    <div class="grid sm:grid-cols-2 gap-5">
+      ${fld('problem','Problem',`<textarea name="problem" rows="3" class="field mt-1 resize-none" placeholder="The pain you're solving">${esc(d.problem)}</textarea>`)}
+      ${fld('solution','Solution',`<textarea name="solution" rows="3" class="field mt-1 resize-none" placeholder="How you solve it, and how you make money">${esc(d.solution)}</textarea>`)}
+    </div>
+    <div class="grid sm:grid-cols-2 gap-5">
+      ${fld('category','Category',`<select name="category" class="field mt-1"><option value="">Select category</option>${CATS.map(c=>`<option ${d.category===c?'selected':''}>${c}</option>`).join('')}</select>`)}
+      ${fld('stage','Funding stage',`<select name="stage" class="field mt-1"><option value="">Select stage</option>${STAGES.map(c=>`<option ${d.stage===c?'selected':''}>${c}</option>`).join('')}</select>`)}
+    </div>`;
+  if(s===2) body=`
+    <div>
+      <label class="text-xs font-semibold text-slate-500">Pitch deck (PDF, up to 15MB)</label>
+      <div id="dropz" class="dropz mt-1 rounded-2xl border-2 border-dashed border-slate-300 dark:border-white/15 p-8 text-center transition cursor-pointer hover:border-brand/60">
+        <input id="fileInput" type="file" accept="application/pdf" class="hidden"/>
+        ${form.file ? `<div class="flex items-center gap-3 justify-center"><div class="grid place-items-center h-12 w-12 rounded-xl bg-rose-500/10 text-rose-500"><i data-lucide="file-text" class="h-6 w-6"></i></div><div class="text-left"><p class="font-semibold text-sm">${esc(form.file.name)}</p><p class="text-xs text-slate-400">${(form.file.size/1048576).toFixed(2)} MB · PDF</p></div><button type="button" onclick="event.stopPropagation();form.file=null;form.deckUrl='';renderSubmit()" class="ml-3 grid place-items-center h-9 w-9 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"><i data-lucide="trash-2" class="h-4 w-4 text-slate-400"></i></button></div>`
+        : `<div class="mx-auto grid place-items-center h-14 w-14 rounded-2xl bg-brand/10 text-brand"><i data-lucide="upload-cloud" class="h-7 w-7"></i></div><p class="mt-3 font-semibold text-sm">Drag & drop your deck here</p><p class="text-xs text-slate-400 mt-1">or <span class="text-brand font-medium">browse files</span> · PDF only · 15MB max</p>`}
+      </div>
+      <p class="hint text-xs text-rose-500 mt-1 hidden" data-hint="file"></p>
+      <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1"><i data-lucide="info" class="h-3 w-3"></i> No deck yet? We'll generate an interactive 6-slide deck from your answers.</p>
+    </div>
+    ${fld('videoUrl','Video pitch URL (optional)',`<input name="videoUrl" class="field mt-1" placeholder="https://www.youtube.com/watch?v=… or vimeo.com/…" value="${esc(d.videoUrl)}"/>`,'YouTube and Vimeo links are converted to embeds automatically.')}
+    ${form.file && form.deckUrl ? `<div class="rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden"><div class="px-4 py-2 text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-white/5">Preview</div><iframe src="${form.deckUrl}#page=1&view=Fit" class="w-full aspect-video"></iframe></div>`:''}`;
+  if(s===3) body=`
+    ${fld('target','Funding target (USD)',`<div class="relative mt-1"><span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-semibold">$</span><input name="target" type="number" min="10000" step="1000" class="field !pl-8" placeholder="250000" value="${esc(d.target)}"/></div>`,'Between $10,000 and $50,000,000')}
+    <div class="grid sm:grid-cols-2 gap-5">
+      ${fld('founderName','Founder name',`<input name="founderName" class="field mt-1" placeholder="Full name" value="${esc(d.founderName||state.user?.name||'')}"/>`)}
+      ${fld('founderTitle','Title',`<input name="founderTitle" class="field mt-1" placeholder="CEO & Co-founder" value="${esc(d.founderTitle)}"/>`)}
+    </div>
+    <div class="grid sm:grid-cols-2 gap-5">
+      ${fld('email','Contact email',`<input name="email" type="email" class="field mt-1" placeholder="you@company.com" value="${esc(d.email||state.user?.email||'')}"/>`)}
+      ${fld('linkedin','LinkedIn URL (optional)',`<input name="linkedin" class="field mt-1" placeholder="https://linkedin.com/in/…" value="${esc(d.linkedin)}"/>`)}
+    </div>`;
+  if(s===4){ const prev=previewPitch(); body=`
+    <div class="rounded-2xl border border-brand/30 bg-brand/5 p-4 flex items-start gap-3 text-sm"><i data-lucide="eye" class="h-4.5 w-4.5 text-brand mt-0.5"></i><div><b>This is how investors will see your card.</b> Submissions are reviewed within 48 hours and appear as <i>Pending Approval</i> in your dashboard until then.</div></div>
+    <div class="grid md:grid-cols-2 gap-6 items-start">
+      <div class="max-w-sm">${card(prev).replace('reveal','reveal in')}</div>
+      <div class="space-y-3 text-sm">
+        ${[['Category',prev.category],['Stage',prev.stage],['Target',money(prev.target)],['Founder',`${prev.founder.name} · ${prev.founder.title}`],['Email',d.email],['Deck',form.file?form.file.name:'Auto-generated interactive deck'],['Video',d.videoUrl||'—']].map(([l,v])=>`<div class="flex justify-between gap-4 py-2 border-b border-slate-100 dark:border-white/5"><span class="text-slate-500">${l}</span><span class="font-medium text-right truncate">${esc(v)}</span></div>`).join('')}
+        <div class="pt-2"><p class="text-xs text-slate-400 mb-1">Problem</p><p>${esc(d.problem)}</p></div>
+        <div><p class="text-xs text-slate-400 mb-1">Solution</p><p>${esc(d.solution)}</p></div>
+      </div>
+    </div>`; }
+
+  $('#app').innerHTML = `
+  <div class="view-enter mx-auto max-w-4xl px-5">
+    <div class="text-center"><p class="text-xs font-semibold uppercase tracking-wider text-brand">Submit a Pitch</p><h1 class="mt-2 font-display font-bold text-3xl sm:text-4xl tracking-tight">Get in front of investors</h1><p class="mt-2 text-slate-500">Four quick steps. Save as you go — your progress is kept locally.</p></div>
+    <ol class="mt-8 grid grid-cols-4 gap-2">${steps.map(([l,ic],i)=>`<li class="flex flex-col items-center gap-2 text-center"><div class="grid place-items-center h-10 w-10 rounded-xl border transition ${i+1<s?'bg-fund border-fund text-white':i+1===s?'bg-brand border-brand text-white shadow-lg shadow-brand/30':'border-slate-200 dark:border-white/10 text-slate-400'}"><i data-lucide="${i+1<s?'check':ic}" class="h-4.5 w-4.5"></i></div><span class="text-[11px] sm:text-xs font-medium ${i+1===s?'text-brand':'text-slate-500'}">${l}</span></li>`).join('')}</ol>
+    <div class="mt-2 h-1 rounded-full bg-slate-200 dark:bg-white/10 overflow-hidden"><div class="h-full bg-gradient-to-r from-brand to-violet-500 transition-all duration-700" style="width:${(s/4)*100}%"></div></div>
+    <form id="subForm" class="sheet-enter mt-8 rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-6 sm:p-8 space-y-5" novalidate>
+      ${body}
+      <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+        <button type="button" onclick="subStep(-1)" class="inline-flex items-center gap-2 h-11 px-4 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-semibold hover:border-brand transition ${s===1?'invisible':''}"><i data-lucide="arrow-left" class="h-4 w-4"></i> Back</button>
+        <div class="flex items-center gap-2">
+          ${s<4?`<button type="button" onclick="saveDraft()" class="hidden sm:inline-flex h-11 px-4 rounded-xl text-sm font-semibold text-slate-500 hover:text-brand transition">Save draft</button>`:''}
+          <button type="submit" class="group relative overflow-hidden inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-brand text-white text-sm font-semibold shadow-lg shadow-brand/30 hover:bg-indigo-500 transition"><span class="sweep"></span>${s===4?'<i data-lucide="send" class="h-4 w-4"></i> Submit for approval':'Continue <i data-lucide="arrow-right" class="h-4 w-4"></i>'}</button>
+        </div>
+      </div>
+    </form>
+  </div>`;
+  icons(); window.scrollTo({top:0});
+  const f=$('#subForm');
+  f.oninput = e => { if(e.target.name) form.data[e.target.name]=e.target.value; };
+  f.onsubmit = e => { e.preventDefault(); if(s===4) return finalizeSubmit(); if(validateStep(s)) { form.step++; renderSubmit(); } };
+  if(s===2){
+    const dz=$('#dropz'), fi=$('#fileInput');
+    dz.onclick=()=>fi.click(); fi.onchange=()=>handleFile(fi.files[0]);
+    ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('over')}));
+    ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('over')}));
+    dz.addEventListener('drop',e=>handleFile(e.dataTransfer.files[0]));
+  }
+}
+function handleFile(file){ const hint=$('[data-hint="file"]'); if(!file) return; if(file.type!=='application/pdf'){ hint.textContent='Only PDF files are accepted.'; hint.classList.remove('hidden'); return; } if(file.size>15*1048576){ hint.textContent=`File is ${(file.size/1048576).toFixed(1)}MB — the limit is 15MB.`; hint.classList.remove('hidden'); return; } form.file=file; form.deckUrl=URL.createObjectURL(file); renderSubmit(); toast('Deck attached.'); }
+function validateStep(s){
+  const d=form.data; let ok=true; const f=$('#subForm');
+  const check=(n,cond,msg)=>{ const el=f[n]; const h=$(`[data-hint="${n}"]`); if(el) el.classList.toggle('err',!cond); if(h){ h.textContent=msg; h.classList.toggle('hidden',cond); } if(!cond) ok=false; };
+  if(s===1){ check('title',d.title.trim().length>=2,'Project name is required.'); check('tagline',d.tagline.trim().length>=10 && d.tagline.length<=120,'Tagline should be 10–120 characters.'); check('description',d.description.trim().length>=40,'Give investors at least 40 characters.'); check('problem',d.problem.trim().length>=20,'Describe the problem (20+ chars).'); check('solution',d.solution.trim().length>=20,'Describe the solution (20+ chars).'); check('category',!!d.category,'Pick a category.'); check('stage',!!d.stage,'Pick a stage.'); }
+  if(s===2){ check('videoUrl', !d.videoUrl || /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|vimeo\.com)\//i.test(d.videoUrl), 'Enter a valid YouTube or Vimeo URL.'); }
+  if(s===3){ const t=Number(d.target); check('target',t>=10000 && t<=5e7,'Target must be between $10,000 and $50,000,000.'); check('founderName',d.founderName.trim().length>=2,'Founder name is required.'); check('founderTitle',d.founderTitle.trim().length>=2,'Add your title.'); check('email',/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email),'Enter a valid email.'); }
+  if(!ok) toast('Please fix the highlighted fields.','err');
+  return ok;
+}
+function subStep(dir){ form.step=Math.max(1,form.step+dir); renderSubmit(); }
+function saveDraft(){ LS.set('pdh_draft', form.data); toast('Draft saved locally.','info'); }
+function embedUrl(u){ if(!u) return ''; const yt=u.match(/(?:youtu\.be\/|v=|embed\/)([\w-]{6,})/); if(yt) return `https://www.youtube.com/embed/${yt[1]}`; const vm=u.match(/vimeo\.com\/(\d+)/); if(vm) return `https://player.vimeo.com/video/${vm[1]}`; return u; }
+function previewPitch(){ const d=form.data; const name=d.founderName||'Founder'; return { id:'preview', ownerId:state.user?.id||'demo', title:d.title, tagline:d.tagline, description:d.description, problem:d.problem, solution:d.solution, category:d.category, stage:d.stage, target:Number(d.target)||0, committed:0, upvotes:0, views:0, status:'Pending', createdAt:new Date().toISOString(), videoUrl:embedUrl(d.videoUrl), deckUrl:form.deckUrl, founder:{ name, title:d.founderTitle, linkedin:d.linkedin||'#', initials:name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(), color:CAT_STYLE[d.category]||'from-brand to-violet-500' }, market:{tam:'—',sam:'—',som:'—'}, traction:[['Stage',d.stage],['Status','Pending review'],['Target',short(Number(d.target)||0)],['Posted','Today']] }; }
+async function finalizeSubmit(){
+  const go = async ()=>{
+    const p=previewPitch(); p.id='p'+Date.now(); p.ownerId=state.user.id;
+    const btn=$('#subForm button[type=submit]'); btn.disabled=true; btn.innerHTML='<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Uploading…'; icons();
+    if(form.file){ p.deckPath = await db.uploadDeck(form.file); }
+    await new Promise(r=>setTimeout(r,900));
+    await db.createPitch(p);
+    form.step=1; form.data=Object.fromEntries(Object.keys(form.data).map(k=>[k,''])); form.file=null; form.deckUrl=''; localStorage.removeItem('pdh_draft');
+    location.hash='#/dashboard'; toast('Pitch submitted — status: Pending Approval.');
+  };
+  if(!state.user){ toast('Sign in to submit your pitch.','info'); openAuth(go); return; }
+  go();
+}
+
+/* ── DASHBOARD ─────────────────────────────────────────────── */
+let dashTab='mine';
+function renderDashboard(){
+  if(!state.user){ $('#app').innerHTML=`<div class="view-enter mx-auto max-w-lg px-5 py-16 text-center"><div class="mx-auto grid place-items-center h-16 w-16 rounded-2xl bg-brand/10 text-brand"><i data-lucide="lock" class="h-7 w-7"></i></div><h1 class="mt-5 font-display font-bold text-3xl tracking-tight">Your founder dashboard</h1><p class="mt-2 text-slate-500">Sign in to manage your pitches, track deck analytics and see investor inquiries.</p><button onclick="openAuth()" class="mt-6 h-12 px-6 rounded-xl bg-brand text-white font-semibold shadow-lg shadow-brand/30">Sign in to continue</button></div>`; icons(); return; }
+  const mine=state.pitches.filter(p=>p.ownerId===state.user.id);
+  const savedIds=new Set([...state.saved,...state.upvoted]); const savedList=state.pitches.filter(p=>savedIds.has(p.id) && p.status==='Approved');
+  const inbox=state.contacts.filter(c=>mine.some(p=>p.id===c.pitchId)).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const tViews=mine.reduce((a,p)=>a+(p.views||0),0), tUp=mine.reduce((a,p)=>a+(p.upvotes||0),0), tCom=mine.reduce((a,p)=>a+(p.committed||0),0);
+  const tabs=[['mine','My Pitches',mine.length,'presentation'],['saved','Saved Decks',savedList.length,'bookmark'],['inbox','Investor Inbox',inbox.length,'inbox']];
+  let body='';
+  if(dashTab==='mine') body = mine.length ? `<div class="space-y-4">${mine.map((p,i)=>{ const h=history(p); return `
+    <div class="reveal rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-5 grid md:grid-cols-12 gap-5 items-center lift" style="--d:${i*70}ms">
+      <div class="md:col-span-5 flex items-center gap-4 min-w-0">${logoHTML(p,'h-12 w-12 text-sm')}<div class="min-w-0"><div class="flex items-center gap-2 flex-wrap">${statusChip(p.status)}${catChip(p.category)}</div><h3 class="mt-1.5 font-display font-bold truncate">${esc(p.title)}</h3><p class="text-xs text-slate-500 truncate">${esc(p.tagline)}</p></div></div>
+      <div class="md:col-span-2"><div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Views · 14d</div>${spark(h,'#6366F1')}<div class="text-sm font-semibold">${num(p.views)} <span class="text-xs text-emerald-500 font-medium">+${Math.round(h.at(-1)/Math.max(1,h[0])*100-100)}%</span></div></div>
+      <div class="md:col-span-2 grid grid-cols-2 gap-2 text-sm"><div><div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Upvotes</div><div class="font-semibold">${num(p.upvotes)}</div></div><div><div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Inquiries</div><div class="font-semibold">${state.contacts.filter(c=>c.pitchId===p.id).length}</div></div></div>
+      <div class="md:col-span-2"><div class="flex justify-between text-[11px] text-slate-500 mb-1"><span>${short(p.committed||0)}</span><span>${short(p.target)}</span></div><div class="bar"><i style="width:${Math.min(100,Math.round((p.committed||0)/p.target*100))}%"></i></div></div>
+      <div class="md:col-span-1 flex md:flex-col gap-1.5 justify-end">
+        <a href="#/pitch/${p.id}" class="grid place-items-center h-9 w-9 rounded-lg border border-slate-200 dark:border-white/10 hover:border-brand hover:text-brand transition" title="View"><i data-lucide="eye" class="h-4 w-4"></i></a>
+        <button onclick="toast('Editing opens the submission wizard with your data prefilled.','info')" class="grid place-items-center h-9 w-9 rounded-lg border border-slate-200 dark:border-white/10 hover:border-brand hover:text-brand transition" title="Edit"><i data-lucide="pencil" class="h-4 w-4"></i></button>
+        ${p.status==='Draft'?`<button onclick="publishDraft('${p.id}')" class="grid place-items-center h-9 w-9 rounded-lg bg-brand text-white hover:bg-indigo-500 transition" title="Submit for review"><i data-lucide="send" class="h-4 w-4"></i></button>`:''}
+      </div>
+    </div>`; }).join('')}</div>`
+    : `<div class="rounded-2xl border border-dashed border-slate-300 dark:border-white/10 p-14 text-center"><i data-lucide="presentation" class="h-8 w-8 mx-auto text-slate-400"></i><p class="mt-3 font-semibold">No pitches yet</p><a href="#/submit" class="mt-5 inline-flex h-10 px-4 items-center rounded-xl bg-brand text-white text-sm font-semibold">Submit your first pitch</a></div>`;
+  if(dashTab==='saved') body = savedList.length ? `<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">${savedList.map(card).join('')}</div>` : `<div class="rounded-2xl border border-dashed border-slate-300 dark:border-white/10 p-14 text-center"><i data-lucide="bookmark" class="h-8 w-8 mx-auto text-slate-400"></i><p class="mt-3 font-semibold">Nothing saved yet</p><p class="text-sm text-slate-500 mt-1">Upvote or bookmark decks to build your watchlist.</p><a href="#/explore" class="mt-5 inline-flex h-10 px-4 items-center rounded-xl bg-brand text-white text-sm font-semibold">Explore pitches</a></div>`;
+  if(dashTab==='inbox') body = inbox.length ? `<div class="space-y-3">${inbox.map((c,i)=>{ const p=state.pitches.find(x=>x.id===c.pitchId); const col={VC:'bg-brand/10 text-brand',Angel:'bg-violet-500/10 text-violet-500',Corporate:'bg-fund/10 text-emerald-500',Community:'bg-amber-500/10 text-amber-500'}[c.investorType]; return `
+    <div class="reveal rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-5 lift" style="--d:${i*60}ms">
+      <div class="flex items-start gap-4"><div class="grid place-items-center h-11 w-11 rounded-full bg-slate-100 dark:bg-white/10 font-bold text-sm shrink-0">${esc(c.name.split(' ').map(w=>w[0]).join('').slice(0,2))}</div>
+        <div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><b>${esc(c.name)}</b><span class="text-[11px] font-semibold px-2 py-0.5 rounded-md ${col}">${c.investorType}</span><span class="text-xs text-slate-400">re: ${esc(p?.title||'—')}</span><span class="ml-auto text-xs text-slate-400">${timeAgo(c.createdAt)}</span></div>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">${esc(c.message)}</p>
+        <div class="mt-3 flex gap-2"><a href="mailto:${esc(c.email)}" class="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-indigo-500"><i data-lucide="reply" class="h-3.5 w-3.5"></i> Reply</a><button onclick="toast('Meeting link sent to ${esc(c.email)}.','ok')" class="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-slate-200 dark:border-white/10 text-xs font-semibold hover:border-brand"><i data-lucide="calendar" class="h-3.5 w-3.5"></i> Schedule call</button></div></div></div>
+    </div>`; }).join('')}</div>` : `<div class="rounded-2xl border border-dashed border-slate-300 dark:border-white/10 p-14 text-center"><i data-lucide="inbox" class="h-8 w-8 mx-auto text-slate-400"></i><p class="mt-3 font-semibold">Inbox is empty</p><p class="text-sm text-slate-500 mt-1">Investor inquiries on your pitches will show up here.</p></div>`;
+
+  $('#app').innerHTML = `
+  <div class="view-enter mx-auto max-w-7xl px-5">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div class="flex items-center gap-4"><span class="grid place-items-center h-14 w-14 rounded-2xl bg-gradient-to-br from-brand to-violet-500 text-white text-lg font-bold shadow-lg shadow-brand/30">${esc(state.user.initials)}</span><div><p class="text-xs font-semibold uppercase tracking-wider text-brand">Dashboard</p><h1 class="font-display font-bold text-3xl tracking-tight">Welcome back, ${esc(state.user.name.split(' ')[0])}</h1></div></div>
+      <a href="#/submit" class="group relative overflow-hidden inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-brand text-white text-sm font-semibold shadow-lg shadow-brand/30 hover:bg-indigo-500 transition w-fit"><span class="sweep"></span><i data-lucide="plus" class="h-4 w-4"></i> New pitch</a>
+    </div>
+    <div class="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+      ${[['Total views',num(tViews),'eye','text-brand'],['Total upvotes',num(tUp),'arrow-big-up','text-violet-400'],['Committed capital',short(tCom),'trending-up','text-emerald-500'],['Investor inquiries',inbox.length,'mail','text-amber-400']].map(([l,v,ic,c],i)=>`<div class="reveal rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-ink2 p-4" style="--d:${i*60}ms"><div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400"><i data-lucide="${ic}" class="h-3.5 w-3.5 ${c}"></i>${l}</div><div class="mt-1 font-display font-bold text-2xl ${c}">${v}</div></div>`).join('')}
+    </div>
+    <div class="mt-8 flex gap-1 border-b border-slate-200 dark:border-white/10 overflow-x-auto">
+      ${tabs.map(([k,l,n,ic])=>`<button onclick="dashTab='${k}';renderDashboard()" class="tabline ${dashTab===k?'on text-brand':'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'} inline-flex items-center gap-2 h-11 px-4 text-sm font-semibold whitespace-nowrap transition"><i data-lucide="${ic}" class="h-4 w-4"></i>${l}<span class="text-[11px] px-1.5 py-0.5 rounded-md ${dashTab===k?'bg-brand/10 text-brand':'bg-slate-100 dark:bg-white/5 text-slate-500'}">${n}</span></button>`).join('')}
+    </div>
+    <div class="mt-6 fade-in">${body}</div>
+  </div>`;
+  icons(); observeReveal(); window.scrollTo({top:0});
+}
+function publishDraft(id){ const p=state.pitches.find(x=>x.id===id); if(p){ p.status='Pending'; persist(); renderDashboard(); toast('Draft submitted for review.'); } }
+
+/* ── ROUTER ─────────────────────────────────────────────────── */
+function route(){
+  const h=location.hash||'#/'; closeModal(); $('#mobileMenu').classList.add('hidden');
+  $$('[data-nav]').forEach(a=>a.classList.toggle('text-brand', h.startsWith('#/explore')));
+  if(h.startsWith('#/pitch/')) renderPitch(h.split('/')[2]);
+  else if(h.startsWith('#/submit')) { const dr=LS.get('pdh_draft',null); if(dr && !form.data.title) form.data={...form.data,...dr}; renderSubmit(); }
+  else if(h.startsWith('#/dashboard')) renderDashboard();
+  else if(h.startsWith('#/explore')) renderHome(true);
+  else renderHome(false);
+}
+window.addEventListener('hashchange', route);
+
+/* ── NAV BEHAVIOUR ──────────────────────────────────────────── */
+function bindNav(){
+  const catHTML = c => `<button onclick="setCat('${c}')" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 text-left"><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-br ${CAT_STYLE[c]||'from-slate-400 to-slate-600'}"></span>${c}<span class="ml-auto text-xs text-slate-400">${c==='All'?approved().length:approved().filter(p=>p.category===c).length}</span></button>`;
+  $('#catMenu').innerHTML=['All',...CATS].map(catHTML).join('');
+  $('#mobCats').innerHTML=['All',...CATS].map(c=>`<button onclick="setCat('${c}')" class="h-9 rounded-lg border border-slate-200 dark:border-white/10 text-xs font-medium hover:border-brand">${c}</button>`).join('');
+  $('#catTrigger').onclick=e=>{ e.stopPropagation(); $('#catMenu').classList.toggle('hidden'); };
+  document.addEventListener('click',e=>{ if(!e.target.closest('#catMenu,#catTrigger')) $('#catMenu').classList.add('hidden'); });
+  $('#menuBtn').onclick=()=>$('#mobileMenu').classList.toggle('hidden');
+  const onSearch = e => { state.filters.q=e.target.value; if(!$('#grid')){ if(e.key==='Enter'){ location.hash='#/explore'; } return; } renderGrid(); };
+  $('#navSearch').oninput=onSearch; $('#navSearch').onkeydown=e=>{ if(e.key==='Enter'&&!$('#grid')) location.hash='#/explore'; };
+  $('#mobSearch').oninput=e=>{ state.filters.q=e.target.value; $('#navSearch').value=e.target.value; if($('#grid')) renderGrid(); }; $('#mobSearch').onkeydown=e=>{ if(e.key==='Enter'){ $('#mobileMenu').classList.add('hidden'); if(!$('#grid')) location.hash='#/explore'; } };
+  document.addEventListener('keydown',e=>{ if(e.key==='/' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){ e.preventDefault(); $('#navSearch').focus(); } if(e.key==='Escape') closeModal(); if(state.currentId && location.hash.startsWith('#/pitch/') && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){ if(e.key==='ArrowRight') deckGo(1); if(e.key==='ArrowLeft') deckGo(-1); } });
+  $('#themeBtn').onclick=()=>{ const d=document.documentElement.classList.toggle('dark'); LS.set('pdh_theme', d?'dark':'light'); };
+  const th=LS.get('pdh_theme',null); if(th) document.documentElement.classList.toggle('dark', th==='dark');
+  window.addEventListener('scroll',()=>{ $('#nav').classList.toggle('shadow-2xl', scrollY>20); },{passive:true});
+}
+
+/* ── BOOT ──────────────────────────────────────────────────── */
+(async function boot(){
+  await db.init();
+  $('#modeBadge').innerHTML = db.live ? `<span class="h-2 w-2 rounded-full bg-fund animate-pulse"></span> Connected to Supabase` : `<span class="h-2 w-2 rounded-full bg-amber-400"></span> Demo mode · local mock data <span class="hidden sm:inline text-slate-400">— set <code class="text-brand">window.SUPABASE_URL</code> to go live</span>`;
+  bindNav(); renderAuthBtn(); route(); icons();
+})();
+</script>
+</body>
+</html>
